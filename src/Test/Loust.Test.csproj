@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <GenerateBuildInfoConfigFile>false</GenerateBuildInfoConfigFile>
+    <AssemblyName>Aspenlaub.Net.GitHub.CSharp.Loust.Test</AssemblyName>
+    <RootNamespace>Aspenlaub.Net.GitHub.CSharp.Loust.Test</RootNamespace>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Deterministic>false</Deterministic>
+    <AssemblyTitle>Aspenlaub.Net.GitHub.CSharp.Loust.Test</AssemblyTitle>
+    <AssemblyProduct>Aspenlaub.Net.GitHub.CSharp.Loust.Test</AssemblyProduct>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Loust.csproj" />
+  </ItemGroup>
+</Project>

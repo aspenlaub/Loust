@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>oust.ico</ApplicationIcon>
+    <StartupObject>Aspenlaub.Net.GitHub.CSharp.Loust.App</StartupObject>
+    <GenerateBuildInfoConfigFile>false</GenerateBuildInfoConfigFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Deterministic>false</Deterministic>
+    <AssemblyName>Aspenlaub.Net.GitHub.CSharp.Loust</AssemblyName>
+    <RootNamespace>Aspenlaub.Net.GitHub.CSharp.Loust</RootNamespace>
+    <AssemblyTitle>Aspenlaub.Net.GitHub.CSharp.Loust</AssemblyTitle>
+    <AssemblyProduct>Aspenlaub.Net.GitHub.CSharp.Loust</AssemblyProduct>
+    <VersionDays>$([System.DateTime]::UtcNow.Subtract($([System.DateTime]::Parse("2019-07-24"))).Days.ToString())</VersionDays>
+    <VersionMinutes>$([System.Math]::Floor($([System.DateTime]::UtcNow.Subtract($([System.DateTime]::UtcNow.Date)).TotalMinutes)).ToString())</VersionMinutes>
+    <Version>2.0.$(VersionDays).$(VersionMinutes)</Version>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/aspenlaub/Loust.git</RepositoryUrl>
+    <RepositoryBranch>master</RepositoryBranch>
+    <PackageId>Loust</PackageId>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <NuspecFile>Loust.nuspec</NuspecFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="TestResults\**" />
+    <Compile Remove="Test\**" />
+    <Compile Remove="UI\**" />
+    <EmbeddedResource Remove="TestResults\**" />
+    <EmbeddedResource Remove="Test\**" />
+    <EmbeddedResource Remove="UI\**" />
+    <None Remove="TestResults\**" />
+    <None Remove="Test\**" />
+    <None Remove="UI\**" />
+    <Page Remove="TestResults\**" />
+    <Page Remove="Test\**" />
+    <Page Remove="UI\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Gui\oust.ico" />
+    <None Remove="oust.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Gui\oust.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="oust.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+    <PackageReference Include="TashClient" Version="2.0.1323.770" />
+    <PackageReference Include="VishizhukelNet" Version="2.0.1323.940" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
+  </ItemGroup>
+</Project>
