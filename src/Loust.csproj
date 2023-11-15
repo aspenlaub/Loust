@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>oust.ico</ApplicationIcon>
     <StartupObject>Aspenlaub.Net.GitHub.CSharp.Loust.App</StartupObject>
@@ -52,9 +52,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
-    <PackageReference Include="TashClient" Version="2.0.1552.1185" />
-    <PackageReference Include="VishizhukelNet" Version="2.0.1553.954" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+    <PackageReference Include="TashClient" Version="2.0.1574.1166" />
+    <PackageReference Include="VishizhukelNet" Version="2.0.1574.1205" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
