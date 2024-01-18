@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="L'Oust" Height="640" Width="1080" Background="Wheat" Closing="OnWindowClosingAsync" Icon="oust.ico"
+        Title="L'Oust" Height="640" Width="1080" Background="Wheat" Closing="OnWindowClosingAsync" Icon="/oust.ico"
         FontFamily="Courier New" Loaded="OnLoustWindowLoadedAsync">
     <Grid>
         <Grid.RowDefinitions>

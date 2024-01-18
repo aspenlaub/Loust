@@ -40,13 +40,9 @@
     <Page Remove="UI\**" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Gui\oust.ico" />
     <None Remove="oust.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Gui\oust.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="oust.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
