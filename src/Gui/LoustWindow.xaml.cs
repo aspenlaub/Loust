@@ -227,7 +227,9 @@ public partial class LoustWindow : IDisposable {
 
                         var controllableProcesses = await TashAccessor.GetControllableProcessesAsync();
                         var controllableProcess = controllableProcesses.FirstOrDefault(pr
-                                => pr.Title == ControlledApplication.QualifiedName && !pr.LaunchCommand.Contains("Debug"));
+                                => pr.Title == ControlledApplication.QualifiedName
+                                    && !pr.LaunchCommand.Contains("Debug")
+                                    && !pr.LaunchCommand.Contains("Temp"));
                         if (controllableProcess == null) {
                             continue;
                         }
