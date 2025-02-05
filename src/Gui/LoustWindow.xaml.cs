@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -24,6 +25,8 @@ using Aspenlaub.Net.GitHub.CSharp.VishizhukelNet.Helpers;
 using Autofac;
 using WindowsApplication = System.Windows.Application;
 
+// ReSharper disable AsyncVoidMethod
+
 namespace Aspenlaub.Net.GitHub.CSharp.Loust.Gui;
 
 /// <summary>
@@ -33,7 +36,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Loust.Gui;
 public partial class LoustWindow : IDisposable {
     private bool IsExecuting { get; set; }
     private bool Abort { get; set; }
-    private const string LastScriptFileName = @"c:\temp\LastLoust.txt";
+    private const string _lastScriptFileName = @"c:\temp\LastLoust.txt";
     private ITashAccessor TashAccessor { get; }
     private DispatcherTimer _DispatcherTimer;
     private SynchronizationContext UiSynchronizationContext { get; }
@@ -82,8 +85,8 @@ public partial class LoustWindow : IDisposable {
             return;
         }
 
-        if (File.Exists(LastScriptFileName)) {
-            File.Delete(LastScriptFileName);
+        if (File.Exists(_lastScriptFileName)) {
+            File.Delete(_lastScriptFileName);
         }
         await StartOrResumeAsync(false, false, false, IgnoreValidationCheckBox.IsChecked ?? false, IgnoreUnitTestCheckBox.IsChecked ?? false);
     }
@@ -110,20 +113,20 @@ public partial class LoustWindow : IDisposable {
             return;
         }
 
-        var oldCursor = AnalysisResultBox.Cursor;
+        Cursor oldCursor = AnalysisResultBox.Cursor;
         AnalysisResultBox.Cursor = Cursors.Wait;
         AnalysisResult.Blocks.Clear();
         IsExecuting = true;
         Abort = false;
-        var coverageFinder = _Container.Resolve<ICoverageFinder>();
-        var lastModifiedPhpFilesWithoutCoverage = await coverageFinder.GetLastModifiedPhpFilesWithoutCoverageAsync();
-        foreach (var p2 in lastModifiedPhpFilesWithoutCoverage.Select(fileName => new Paragraph(new Run(string.Format(Properties.Resources.NoCoverageFor, fileName))) {Foreground = Brushes.Red})) {
+        ICoverageFinder coverageFinder = _Container.Resolve<ICoverageFinder>();
+        IList<string> lastModifiedPhpFilesWithoutCoverage = await coverageFinder.GetLastModifiedPhpFilesWithoutCoverageAsync();
+        foreach (Paragraph p2 in lastModifiedPhpFilesWithoutCoverage.Select(fileName => new Paragraph(new Run(string.Format(Properties.Resources.NoCoverageFor, fileName))) {Foreground = Brushes.Red})) {
             AnalysisResult.Blocks.Add(p2);
         }
 
         Paragraph p;
         var gate = new HttpGate();
-        var localHostIsAvailable = await gate.IsLocalHostAvailableAsync();
+        bool localHostIsAvailable = await gate.IsLocalHostAvailableAsync();
         if (!localHostIsAvailable) {
             p = new Paragraph(new Run(Properties.Resources.LocalHostNotAvailable)) {
                 Foreground = Brushes.Red
@@ -132,7 +135,7 @@ public partial class LoustWindow : IDisposable {
             AnalysisResultBox.ScrollToEnd();
         }
 
-        var sqlServerIsAvailable = Process.GetProcesses().Any(proc => proc.ProcessName.ToUpper().Contains("SQLSERVR"));
+        bool sqlServerIsAvailable = Process.GetProcesses().Any(proc => proc.ProcessName.ToUpper().Contains("SQLSERVR"));
         if (!sqlServerIsAvailable) {
             p = new Paragraph(new Run(Properties.Resources.SqlServerNotAvailable)) {
                 Foreground = Brushes.Red
@@ -142,15 +145,15 @@ public partial class LoustWindow : IDisposable {
         }
 
         if (localHostIsAvailable && sqlServerIsAvailable && !showUncoveredOnly) {
-            var scriptFileNames = await coverageFinder.GetOrderedScriptFileNamesAsync(oldestFirst, broken, ignoreValidation, ignoreUnitTest);
+            IList<string> scriptFileNames = await coverageFinder.GetOrderedScriptFileNamesAsync(oldestFirst, broken, ignoreValidation, ignoreUnitTest);
             if (oldestFirst) {
                 scriptFileNames = scriptFileNames.Reverse().ToList();
             }
-            var runner = _Container.Resolve<IScriptRunner>();
-            var lastScriptFound = !File.Exists(LastScriptFileName);
-            var lastScriptName = lastScriptFound ? "" : await File.ReadAllTextAsync(LastScriptFileName);
-            var brokenTestCaseRepository = _Container.Resolve<IBrokenTestCaseRepository>();
-            var numberOfBrokenTests = await brokenTestCaseRepository.NumberOfBrokenTestsAsync();
+            IScriptRunner runner = _Container.Resolve<IScriptRunner>();
+            bool lastScriptFound = !File.Exists(_lastScriptFileName);
+            string lastScriptName = lastScriptFound ? "" : await File.ReadAllTextAsync(_lastScriptFileName);
+            IBrokenTestCaseRepository brokenTestCaseRepository = _Container.Resolve<IBrokenTestCaseRepository>();
+            int numberOfBrokenTests = await brokenTestCaseRepository.NumberOfBrokenTestsAsync();
             if (numberOfBrokenTests > 0) {
                 p = new Paragraph(new Run($"{numberOfBrokenTests} broken test case/-s registered and awaiting resolution")) {
                     Foreground = Brushes.Red
@@ -158,9 +161,9 @@ public partial class LoustWindow : IDisposable {
                 AnalysisResult.Blocks.Add(p);
                 AnalysisResultBox.ScrollToEnd();
             }
-            var firstScript = true;
+            bool firstScript = true;
             // ReSharper disable once LoopCanBePartlyConvertedToQuery
-            foreach (var scriptFileName in scriptFileNames) {
+            foreach (string scriptFileName in scriptFileNames) {
                 if (!firstScript && StopCheckBox.IsChecked == true) {
                     break;
                 }
@@ -168,22 +171,22 @@ public partial class LoustWindow : IDisposable {
                 if (broken && !await brokenTestCaseRepository.ContainsAsync(scriptFileName)) { continue; }
 
                 firstScript = false;
-                var shortName = scriptFileName.Substring(scriptFileName.LastIndexOf('\\') + 1);
+                string shortName = scriptFileName.Substring(scriptFileName.LastIndexOf('\\') + 1);
                 shortName = shortName.Substring(0, shortName.LastIndexOf('.'));
                 if (!lastScriptFound && shortName != lastScriptName) {
                     continue;
                 }
 
                 lastScriptFound = true;
-                await File.WriteAllTextAsync(LastScriptFileName, shortName);
+                await File.WriteAllTextAsync(_lastScriptFileName, shortName);
                 bool tryAgain;
-                var attempts = await brokenTestCaseRepository.ContainsAsync(scriptFileName) ? 1 : 3;
+                int attempts = await brokenTestCaseRepository.ContainsAsync(scriptFileName) ? 1 : 3;
                 do {
                     tryAgain = false;
                     p = new Paragraph(new Run(string.Format(Properties.Resources.RunningScript, shortName)));
                     AnalysisResult.Blocks.Add(p);
                     var errorsAndInfos = new ErrorsAndInfos();
-                    var findIdleProcessResult = await runner.RunScriptAsync(scriptFileName, errorsAndInfos);
+                    IFindIdleProcessResult findIdleProcessResult = await runner.RunScriptAsync(scriptFileName, errorsAndInfos);
                     if (!errorsAndInfos.AnyErrors()) {
                         await brokenTestCaseRepository.RemoveAsync(scriptFileName);
                         p = new Paragraph(new Run(Properties.Resources.ScriptExecutedWithoutErrors)) {
@@ -202,9 +205,9 @@ public partial class LoustWindow : IDisposable {
                         Abort = false;
                         await Task.Delay(TimeSpan.FromSeconds(5));
                     } else {
-                        var badRequest = errorsAndInfos.Errors.Any(e => e.Contains("BadRequest"));
+                        bool badRequest = errorsAndInfos.Errors.Any(e => e.Contains("BadRequest"));
                         tryAgain = --attempts > 0 && !badRequest && StopCheckBox.IsChecked != true;
-                        var errors = errorsAndInfos.Errors;
+                        IList<string> errors = errorsAndInfos.Errors;
                         /*
                         if (tryAgain || StopCheckBox.IsChecked != true) {
                             var fileName = ScreenShooter.TakeScreenShot();
@@ -225,11 +228,11 @@ public partial class LoustWindow : IDisposable {
                             continue;
                         }
 
-                        var controllableProcesses = await TashAccessor.GetControllableProcessesAsync();
-                        var controllableProcess = controllableProcesses.FirstOrDefault(pr
-                                => pr.Title == ControlledApplication.QualifiedName
-                                    && !pr.LaunchCommand.Contains("Debug")
-                                    && !pr.LaunchCommand.Contains("Temp"));
+                        IList<ControllableProcess> controllableProcesses = await TashAccessor.GetControllableProcessesAsync();
+                        ControllableProcess controllableProcess = controllableProcesses.FirstOrDefault(pr
+                                                                                                           => pr.Title == ControlledApplication.QualifiedName
+                                                                                                              && !pr.LaunchCommand.Contains("Debug")
+                                                                                                              && !pr.LaunchCommand.Contains("Temp"));
                         if (controllableProcess == null) {
                             continue;
                         }
@@ -240,7 +243,7 @@ public partial class LoustWindow : IDisposable {
                         AnalysisResult.Blocks.Add(p);
                         AnalysisResultBox.ScrollToEnd();
 
-                        foreach (var process in Process.GetProcessesByName(ControlledApplication.QualifiedName)) {
+                        foreach (Process process in Process.GetProcessesByName(ControlledApplication.QualifiedName)) {
                             process.Kill(true);
                         }
 
@@ -261,12 +264,13 @@ public partial class LoustWindow : IDisposable {
                         AnalysisResult.Blocks.Add(p);
                         AnalysisResultBox.ScrollToEnd();
 
-                        var launchCommand = controllableProcess.LaunchCommand;
-                        var pos = launchCommand.IndexOf(' ');
-                        var executable = pos >= 0 ? launchCommand.Substring(0, pos) : launchCommand;
-                        var arguments = pos >= 0 ? launchCommand.Substring(pos + 1) : "";
+                        string launchCommand = controllableProcess.LaunchCommand;
+                        int pos = launchCommand.IndexOf(' ');
+                        string executable = pos >= 0 ? launchCommand.Substring(0, pos) : launchCommand;
+                        string arguments = pos >= 0 ? launchCommand.Substring(pos + 1) : "";
                         StartProcess(executable, arguments, "");
                         await Task.Delay(TimeSpan.FromSeconds(20));
+                        await Wait.UntilAsync(() => Task.FromResult(Process.GetProcessesByName(ControlledApplication.QualifiedName).Any()), TimeSpan.FromMinutes(1));
                     }
                 } while (tryAgain && !Abort);
 
@@ -294,8 +298,8 @@ public partial class LoustWindow : IDisposable {
             return;
         }
 
-        if (File.Exists(LastScriptFileName)) {
-            File.Delete(LastScriptFileName);
+        if (File.Exists(_lastScriptFileName)) {
+            File.Delete(_lastScriptFileName);
         }
         await StartOrResumeAsync(false, true, false, IgnoreValidationCheckBox.IsChecked ?? false, IgnoreUnitTestCheckBox.IsChecked ?? false);
     }
@@ -305,8 +309,8 @@ public partial class LoustWindow : IDisposable {
             return;
         }
 
-        if (File.Exists(LastScriptFileName)) {
-            File.Delete(LastScriptFileName);
+        if (File.Exists(_lastScriptFileName)) {
+            File.Delete(_lastScriptFileName);
         }
         await StartOrResumeAsync(false, false, true, false, false);
     }
@@ -317,13 +321,13 @@ public partial class LoustWindow : IDisposable {
     }
 
     private async Task ConnectAndMakeTashRegistrationAsync() {
-        var tashErrorsAndInfos = await TashAccessor.EnsureTashAppIsRunningAsync();
+        IErrorsAndInfos tashErrorsAndInfos = await TashAccessor.EnsureTashAppIsRunningAsync();
         if (tashErrorsAndInfos.AnyErrors()) {
             MessageBox.Show(string.Join("\r\n", tashErrorsAndInfos.Errors), Properties.Resources.CouldNotConnectToTash, MessageBoxButton.OK, MessageBoxImage.Error);
             Close();
         }
 
-        var statusCode = await TashAccessor.PutControllableProcessAsync(Process.GetCurrentProcess());
+        HttpStatusCode statusCode = await TashAccessor.PutControllableProcessAsync(Process.GetCurrentProcess());
         if (statusCode != HttpStatusCode.Created) {
             MessageBox.Show(string.Format(Properties.Resources.CouldNotMakeTashRegistration, statusCode.ToString()), Properties.Resources.LoustWindowTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             Close();
@@ -349,7 +353,7 @@ public partial class LoustWindow : IDisposable {
         UiSynchronizationContext.Send(_ => UpdateUiThreadLastActiveAt(), null);
         if (_StatusLastConfirmedAt == _UiThreadLastActiveAt) { return; }
 
-        var statusCode = await TashAccessor.ConfirmAliveAsync(_ProcessId, _UiThreadLastActiveAt, ControllableProcessStatus.Busy);
+        HttpStatusCode statusCode = await TashAccessor.ConfirmAliveAsync(_ProcessId, _UiThreadLastActiveAt, ControllableProcessStatus.Busy);
         if (statusCode == HttpStatusCode.NoContent) {
             _StatusLastConfirmedAt = _UiThreadLastActiveAt;
             UiSynchronizationContext.Post(_ => ShowLastCommunicatedTimeStamp(), null);

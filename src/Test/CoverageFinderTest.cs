@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Core;
@@ -28,29 +29,29 @@ public class CoverageFinderTest {
     [TestMethod]
     public async Task CanGetCoverageFileForScriptFile() {
         var errorsAndInfos = new ErrorsAndInfos();
-        var loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
+        LoustSettings loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-        var trivialTest = loustSettings.TrivialTest;
-        var scriptFileName = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos) + trivialTest;
+        string trivialTest = loustSettings.TrivialTest;
+        string scriptFileName = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos) + trivialTest;
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
         Assert.IsTrue(File.Exists(scriptFileName));
         var sut = new TestCaseFileNameShortener();
-        var folder = await _Container.Resolve<IFolderResolver>().ResolveAsync(@"$(WampRoot)\temp\coverage", errorsAndInfos);
-        var coverageFileName = sut.CoverageFileForScriptFile(folder, scriptFileName);
-        var expectedCoverageFileName = folder.FullName + @"\oust_"
-            + trivialTest.Substring(trivialTest.LastIndexOf(@"\", StringComparison.InvariantCulture) + 1).ToLower().Replace(' ', '_').Replace(".xml", ".txt");
+        IFolder folder = await _Container.Resolve<IFolderResolver>().ResolveAsync(@"$(WampRoot)\temp\coverage", errorsAndInfos);
+        string coverageFileName = sut.CoverageFileForScriptFile(folder, scriptFileName);
+        string expectedCoverageFileName = folder.FullName + @"\oust_"
+                                                          + trivialTest.Substring(trivialTest.LastIndexOf(@"\", StringComparison.InvariantCulture) + 1).ToLower().Replace(' ', '_').Replace(".xml", ".txt");
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
         Assert.AreEqual(expectedCoverageFileName, coverageFileName);
     }
 
     [TestMethod]
     public async Task CanGetSortValue() {
-        var sut = _Container.Resolve<ICoverageFinder>();
-        var orderedScriptFileNames = await sut.GetOrderedScriptFileNamesAsync(false, true, false, false);
-        var sortValue = "";
-        foreach (var scriptFileName in orderedScriptFileNames) {
+        ICoverageFinder sut = _Container.Resolve<ICoverageFinder>();
+        IList<string> orderedScriptFileNames = await sut.GetOrderedScriptFileNamesAsync(false, true, false, false);
+        string sortValue = "";
+        foreach (string scriptFileName in orderedScriptFileNames) {
             Assert.IsTrue(File.Exists(scriptFileName));
-            var newSortValue = sut.SortValueForScriptFile(scriptFileName, false);
+            string newSortValue = sut.SortValueForScriptFile(scriptFileName, false);
             Assert.IsTrue(sortValue == "" || string.CompareOrdinal(sortValue, newSortValue) >= 0);
             sortValue = newSortValue;
         }

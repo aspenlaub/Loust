@@ -36,13 +36,13 @@ public class CoverageFinder : ICoverageFinder {
         long maxLastWriteTimeUtc = 0;
         const string format = "000000000000000000000000000000";
 
-        var coverageFile = _TestCaseFileNameShortener.CoverageFileForScriptFile(new Folder(Folder),  scriptFileName);
+        string coverageFile = _TestCaseFileNameShortener.CoverageFileForScriptFile(new Folder(Folder),  scriptFileName);
         if (!File.Exists(coverageFile)) { return maxLastWriteTimeUtc.ToString(format); }
 
         if (byLastWriteTime) { return File.GetLastWriteTimeUtc(coverageFile).Ticks.ToString(format); }
 
-        var lines = FilesCoveredInCoverageFile[coverageFile];
-        foreach (var lastWriteTimeUtc in lines.Where(line => File.Exists(line) && !CoveredFilesToIgnore.Contains(line)).Select(line => File.GetLastWriteTimeUtc(line).Ticks).Where(lastWriteTimeUtc => lastWriteTimeUtc > maxLastWriteTimeUtc)) {
+        IList<string> lines = FilesCoveredInCoverageFile[coverageFile];
+        foreach (long lastWriteTimeUtc in lines.Where(line => File.Exists(line) && !CoveredFilesToIgnore.Contains(line)).Select(line => File.GetLastWriteTimeUtc(line).Ticks).Where(lastWriteTimeUtc => lastWriteTimeUtc > maxLastWriteTimeUtc)) {
             maxLastWriteTimeUtc = lastWriteTimeUtc;
         }
 
@@ -70,14 +70,14 @@ public class CoverageFinder : ICoverageFinder {
         await SetFolderIfNecessaryAsync();
 
         FilesCoveredInCoverageFile = new Dictionary<string, IList<string>>();
-        foreach (var coverageFile in Directory.GetFiles(Folder, "*.txt")) {
+        foreach (string coverageFile in Directory.GetFiles(Folder, "*.txt")) {
             FilesCoveredInCoverageFile[coverageFile] = (await File.ReadAllLinesAsync(coverageFile)).Where(l => File.Exists(l)).ToList();
         }
 
         OccurrencesOfCoveredFiles = new Dictionary<string, int>();
         // ReSharper disable once LoopCanBePartlyConvertedToQuery
-        foreach (var lines in FilesCoveredInCoverageFile.Select(f => f.Value)) {
-            foreach (var line in lines) {
+        foreach (IList<string> lines in FilesCoveredInCoverageFile.Select(f => f.Value)) {
+            foreach (string line in lines) {
                 if (!OccurrencesOfCoveredFiles.ContainsKey(line)) {
                     OccurrencesOfCoveredFiles[line] = 1;
                     continue;
@@ -87,7 +87,7 @@ public class CoverageFinder : ICoverageFinder {
             }
         }
 
-        var okayOccurrences = OccurrencesOfCoveredFiles.Any() ? OccurrencesOfCoveredFiles.Max(o => o.Value) / 10 : 10;
+        int okayOccurrences = OccurrencesOfCoveredFiles.Any() ? OccurrencesOfCoveredFiles.Max(o => o.Value) / 10 : 10;
         CoveredFilesToIgnore = OccurrencesOfCoveredFiles.Where(o => o.Value > okayOccurrences).Select(o => o.Key).ToList();
 
         var errorsAndInfos = new ErrorsAndInfos();
@@ -103,7 +103,7 @@ public class CoverageFinder : ICoverageFinder {
             }
         }
 
-        var loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
+        LoustSettings loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
         if (errorsAndInfos.AnyErrors()) {
             throw new Exception(errorsAndInfos.ErrorsToString());
         }
@@ -112,7 +112,7 @@ public class CoverageFinder : ICoverageFinder {
         var client = new HttpClient();
         LastModifiedPhpFiles = new List<string>();
         try {
-            var response = await client.SendAsync(request);
+            HttpResponseMessage response = await client.SendAsync(request);
             if (response.StatusCode == HttpStatusCode.OK) {
                 LastModifiedPhpFiles = (await response.Content.ReadAsStringAsync()).Replace("\r", "").Replace('/', '\\').Split('\n').Where(f => f != "").ToList();
             }

@@ -8,6 +8,7 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Tash;
+using Aspenlaub.Net.GitHub.CSharp.TashClient.Interfaces;
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -27,15 +28,15 @@ public class ScriptRunnerTest {
 
     [TestMethod]
     public async Task CanRunScript() {
-        var sut = _Container.Resolve<IScriptRunner>();
+        IScriptRunner sut = _Container.Resolve<IScriptRunner>();
         var errorsAndInfos = new ErrorsAndInfos();
-        var folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
+        string folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-        var loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
+        LoustSettings loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-        var fileName = Directory.GetFiles(folder, loustSettings.ScriptWildcard, SearchOption.AllDirectories).MinBy(s => s);
+        string fileName = Directory.GetFiles(folder, loustSettings.ScriptWildcard, SearchOption.AllDirectories).MinBy(s => s);
         Assert.IsNotNull(fileName);
-        var findIdleProcessResult = await sut.RunScriptAsync(fileName, errorsAndInfos);
+        IFindIdleProcessResult findIdleProcessResult = await sut.RunScriptAsync(fileName, errorsAndInfos);
         if (findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.DoesNotExist || findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.Dead) {
             Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")));
         }
@@ -44,15 +45,15 @@ public class ScriptRunnerTest {
 
     [TestMethod]
     public async Task CanRunAnotherScript() {
-        var sut = _Container.Resolve<IScriptRunner>();
+        IScriptRunner sut = _Container.Resolve<IScriptRunner>();
         var errorsAndInfos = new ErrorsAndInfos();
-        var folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
+        string folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-        var loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
+        LoustSettings loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-        var fileName = Directory.GetFiles(folder, loustSettings.AnotherScriptWildcard, SearchOption.AllDirectories).MinBy(s => s);
+        string fileName = Directory.GetFiles(folder, loustSettings.AnotherScriptWildcard, SearchOption.AllDirectories).MinBy(s => s);
         Assert.IsNotNull(fileName);
-        var findIdleProcessResult = await sut.RunScriptAsync(fileName, errorsAndInfos);
+        IFindIdleProcessResult findIdleProcessResult = await sut.RunScriptAsync(fileName, errorsAndInfos);
         if (findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.DoesNotExist || findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.Dead) {
             Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")));
         }
@@ -61,13 +62,13 @@ public class ScriptRunnerTest {
 
     [TestMethod]
     public async Task CanRunYetAnotherScript() {
-        var sut = _Container.Resolve<IScriptRunner>();
+        IScriptRunner sut = _Container.Resolve<IScriptRunner>();
         var errorsAndInfos = new ErrorsAndInfos();
-        var folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
+        string folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-        var loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
+        LoustSettings loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-        var fileName = Directory.GetFiles(folder, loustSettings.YetAnotherScriptWildcard, SearchOption.AllDirectories).MinBy(s => s);
+        string fileName = Directory.GetFiles(folder, loustSettings.YetAnotherScriptWildcard, SearchOption.AllDirectories).MinBy(s => s);
         Assert.IsNotNull(fileName);
         await TryRunningYetAnotherScript(sut, fileName, errorsAndInfos);
         if (errorsAndInfos.AnyErrors()) {
@@ -78,7 +79,7 @@ public class ScriptRunnerTest {
     }
 
     private static async Task TryRunningYetAnotherScript(IScriptRunner sut, string fileName, IErrorsAndInfos errorsAndInfos) {
-        var findIdleProcessResult = await sut.RunScriptAsync(fileName, errorsAndInfos);
+        IFindIdleProcessResult findIdleProcessResult = await sut.RunScriptAsync(fileName, errorsAndInfos);
         if (findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.DoesNotExist || findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.Dead) {
             Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")));
         }
@@ -86,16 +87,16 @@ public class ScriptRunnerTest {
 
     [TestMethod]
     public async Task HaveEnoughResultsToIgnoreFiles() {
-        var shortener = _Container.Resolve<ITestCaseFileNameShortener>();
-        var coverageFinder = _Container.Resolve<ICoverageFinder>();
+        ITestCaseFileNameShortener shortener = _Container.Resolve<ITestCaseFileNameShortener>();
+        ICoverageFinder coverageFinder = _Container.Resolve<ICoverageFinder>();
         var errorsAndInfos = new ErrorsAndInfos();
-        var folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
+        string folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
         var fileNames = Directory.GetFiles(folder, "*unit*test*.xml").OrderBy(s => s).ToList();
         fileNames = fileNames.Where(f => coverageFinder.NumberOfResults(shortener.CoverageFileForScriptFileShortName(f)) == 0).ToList();
-        for (var i = 0; i < fileNames.Count && coverageFinder.NumberOfResults("*unit*test*.txt") < 25; i++) {
-            var scriptRunner = _Container.Resolve<IScriptRunner>();
-            var findIdleProcessResult = await scriptRunner.RunScriptAsync(fileNames[i], errorsAndInfos);
+        for (int i = 0; i < fileNames.Count && coverageFinder.NumberOfResults("*unit*test*.txt") < 25; i++) {
+            IScriptRunner scriptRunner = _Container.Resolve<IScriptRunner>();
+            IFindIdleProcessResult findIdleProcessResult = await scriptRunner.RunScriptAsync(fileNames[i], errorsAndInfos);
             if (findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.DoesNotExist || findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.Dead) {
                 Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")));
             }

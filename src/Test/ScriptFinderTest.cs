@@ -14,13 +14,13 @@ namespace Aspenlaub.Net.GitHub.CSharp.Loust.Test;
 public class ScriptFinderTest {
     [TestMethod]
     public async Task CanFindScriptFiles() {
-        var container = new ContainerBuilder().UseLoust().Build();
-        var sut = container.Resolve<IScriptFinder>();
+        IContainer container = new ContainerBuilder().UseLoust().Build();
+        IScriptFinder sut = container.Resolve<IScriptFinder>();
         var errorsAndInfos = new ErrorsAndInfos();
         var fileNames = (await sut.FindScriptFileNamesAsync(errorsAndInfos)).ToList();
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
         Assert.IsTrue(fileNames.Count > 10);
-        foreach (var fileName in fileNames) {
+        foreach (string fileName in fileNames) {
             Assert.IsTrue(File.Exists(fileName));
             Assert.IsTrue(fileName.EndsWith(".xml"));
         }

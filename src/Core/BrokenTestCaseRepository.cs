@@ -23,9 +23,9 @@ public class BrokenTestCaseRepository : IBrokenTestCaseRepository {
     public async Task RegisterAsync(string scriptFileName, IList<string> errors) {
         await SetFolderIfNecessaryAsync();
 
-        var shortName = _TestCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
-        var fileName = _Folder.FullName + '\\' + shortName;
-        var contents =
+        string shortName = _TestCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
+        string fileName = _Folder.FullName + '\\' + shortName;
+        string contents =
             $"Test case {scriptFileName.Substring(scriptFileName.LastIndexOf('\\'))} failed on {Environment.MachineName} at {DateTime.Now.ToShortDateString()} {DateTime.Now.ToShortTimeString()}";
         if (errors.Any()) {
             contents = contents + "\r\n" + string.Join("\r\n", errors);
@@ -36,8 +36,8 @@ public class BrokenTestCaseRepository : IBrokenTestCaseRepository {
     public async Task RemoveAsync(string scriptFileName) {
         await SetFolderIfNecessaryAsync();
 
-        var shortName = _TestCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
-        var fileName = _Folder.FullName + '\\' + shortName;
+        string shortName = _TestCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
+        string fileName = _Folder.FullName + '\\' + shortName;
         if (!File.Exists(fileName)) { return; }
 
         File.Delete(fileName);
@@ -46,8 +46,8 @@ public class BrokenTestCaseRepository : IBrokenTestCaseRepository {
     public async Task<bool> ContainsAsync(string scriptFileName) {
         await SetFolderIfNecessaryAsync();
 
-        var shortName = _TestCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
-        var fileName = _Folder.FullName + '\\' + shortName;
+        string shortName = _TestCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
+        string fileName = _Folder.FullName + '\\' + shortName;
         return File.Exists(fileName);
     }
 

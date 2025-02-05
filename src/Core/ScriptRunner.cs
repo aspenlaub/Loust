@@ -10,22 +10,12 @@ using Aspenlaub.Net.GitHub.CSharp.TashClient.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Loust.Core;
 
-public class ScriptRunner : IScriptRunner {
-    private readonly IDvinRepository _DvinRepository;
-    private readonly ISimpleLogger _SimpleLogger;
-    private readonly ILogConfiguration _LogConfiguration;
-    private readonly IMethodNamesFromStackFramesExtractor _MethodNamesFromStackFramesExtractor;
-
-    public ScriptRunner(IDvinRepository dvinRepository, ISimpleLogger simpleLogger, ILogConfiguration logConfiguration, IMethodNamesFromStackFramesExtractor methodNamesFromStackFramesExtractor) {
-        _DvinRepository = dvinRepository;
-        _SimpleLogger = simpleLogger;
-        _LogConfiguration = logConfiguration;
-        _MethodNamesFromStackFramesExtractor = methodNamesFromStackFramesExtractor;
-    }
-
+public class ScriptRunner(IDvinRepository dvinRepository, ISimpleLogger simpleLogger,
+        ILogConfiguration logConfiguration, IMethodNamesFromStackFramesExtractor methodNamesFromStackFramesExtractor)
+            : IScriptRunner {
     public async Task<IFindIdleProcessResult> RunScriptAsync(string fileName, IErrorsAndInfos errorsAndInfos) {
-        var tashAccessor = new TashAccessor(_DvinRepository, _SimpleLogger, _LogConfiguration, _MethodNamesFromStackFramesExtractor);
-        var findIdleProcessResult = await tashAccessor.FindIdleProcess(p => p.Title == ControlledApplication.QualifiedName);
+        var tashAccessor = new TashAccessor(dvinRepository, simpleLogger, logConfiguration, methodNamesFromStackFramesExtractor);
+        IFindIdleProcessResult findIdleProcessResult = await tashAccessor.FindIdleProcess(p => p.Title == ControlledApplication.QualifiedName);
         switch (findIdleProcessResult.BestProcessStatus) {
             case ControllableProcessStatus.DoesNotExist:
                 errorsAndInfos.Errors.Add(Properties.Resources.NoProcessShookHandsWithTash);
@@ -38,13 +28,13 @@ public class ScriptRunner : IScriptRunner {
                 return findIdleProcessResult;
         }
 
-        var process = findIdleProcessResult.ControllableProcess;
+        ControllableProcess process = findIdleProcessResult.ControllableProcess;
         await RemotelyResetAsync(process, tashAccessor, errorsAndInfos);
         if (errorsAndInfos.AnyErrors()) {
             return findIdleProcessResult;
         }
 
-        var scriptName = fileName.Substring(0, fileName.Length - 4);
+        string scriptName = fileName.Substring(0, fileName.Length - 4);
         scriptName = scriptName.Substring(fileName.LastIndexOf('\\') + 1);
         await RemotelySelectScriptAsync(process, tashAccessor, scriptName, errorsAndInfos);
         if (errorsAndInfos.AnyErrors()) {
@@ -79,7 +69,7 @@ public class ScriptRunner : IScriptRunner {
             Status = ControllableProcessTaskStatus.Requested,
             Text = scriptName
         };
-        var status = await tashAccessor.PutControllableProcessTaskAsync(task);
+        HttpStatusCode status = await tashAccessor.PutControllableProcessTaskAsync(task);
         if (status != HttpStatusCode.Created) {
             errorsAndInfos.Errors.Add($"Could not create script select request ({status})");
             return;
@@ -99,13 +89,17 @@ public class ScriptRunner : IScriptRunner {
             ControlName = "Play",
             Status = ControllableProcessTaskStatus.Requested
         };
-        var status = await tashAccessor.PutControllableProcessTaskAsync(task);
+        HttpStatusCode status = await tashAccessor.PutControllableProcessTaskAsync(task);
         if (status != HttpStatusCode.Created) {
             errorsAndInfos.Errors.Add($"Could not create play request ({status})");
             return;
         }
 
+#if DEBUG
+        task = await tashAccessor.AwaitCompletionAsync(task.Id, 60000);
+#else
         task = await tashAccessor.AwaitCompletionAsync(task.Id, 600000);
+#endif
         if (task.Status == ControllableProcessTaskStatus.Completed) { return; }
 
         errorsAndInfos.Errors.Add(task.Status == ControllableProcessTaskStatus.Failed && !string.IsNullOrWhiteSpace(task.ErrorMessage) ? task.ErrorMessage : $"Play request failed ({task.Status})");
@@ -119,7 +113,7 @@ public class ScriptRunner : IScriptRunner {
             ControlName = "CodeCoverage",
             Status = ControllableProcessTaskStatus.Requested
         };
-        var status = await tashAccessor.PutControllableProcessTaskAsync(task);
+        HttpStatusCode status = await tashAccessor.PutControllableProcessTaskAsync(task);
         if (status != HttpStatusCode.Created) {
             errorsAndInfos.Errors.Add($"Could not request code coverage start ({status})");
             return;
@@ -139,7 +133,7 @@ public class ScriptRunner : IScriptRunner {
             ControlName = "StopCodeCoverage",
             Status = ControllableProcessTaskStatus.Requested
         };
-        var status = await tashAccessor.PutControllableProcessTaskAsync(task);
+        HttpStatusCode status = await tashAccessor.PutControllableProcessTaskAsync(task);
         if (status != HttpStatusCode.Created) {
             errorsAndInfos.Errors.Add($"Could not request code coverage stop ({status})");
             return;
@@ -158,7 +152,7 @@ public class ScriptRunner : IScriptRunner {
             Type = ControllableProcessTaskType.Reset,
             Status = ControllableProcessTaskStatus.Requested
         };
-        var status = await tashAccessor.PutControllableProcessTaskAsync(task);
+        HttpStatusCode status = await tashAccessor.PutControllableProcessTaskAsync(task);
         if (status != HttpStatusCode.Created) {
             errorsAndInfos.Errors.Add($"Could not request reset ({status})");
             return;
