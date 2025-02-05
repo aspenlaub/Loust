@@ -95,11 +95,7 @@ public class ScriptRunner(IDvinRepository dvinRepository, ISimpleLogger simpleLo
             return;
         }
 
-#if DEBUG
-        task = await tashAccessor.AwaitCompletionAsync(task.Id, 60000);
-#else
         task = await tashAccessor.AwaitCompletionAsync(task.Id, 600000);
-#endif
         if (task.Status == ControllableProcessTaskStatus.Completed) { return; }
 
         errorsAndInfos.Errors.Add(task.Status == ControllableProcessTaskStatus.Failed && !string.IsNullOrWhiteSpace(task.ErrorMessage) ? task.ErrorMessage : $"Play request failed ({task.Status})");
