@@ -49,7 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="9.0.3" />
-    <PackageReference Include="TashClient" Version="2.0.2063.1346" />
+    <PackageReference Include="TashClient" Version="2.0.2069.883" />
     <PackageReference Include="VishizhukelNet" Version="2.0.2064.1211" />
   </ItemGroup>
   <ItemGroup>
