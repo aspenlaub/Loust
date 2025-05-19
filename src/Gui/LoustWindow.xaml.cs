@@ -353,11 +353,22 @@ public partial class LoustWindow : IDisposable {
         UiSynchronizationContext.Send(_ => UpdateUiThreadLastActiveAt(), null);
         if (_StatusLastConfirmedAt == _UiThreadLastActiveAt) { return; }
 
-        HttpStatusCode statusCode = await TashAccessor.ConfirmAliveAsync(_ProcessId, _UiThreadLastActiveAt, ControllableProcessStatus.Busy);
-        if (statusCode == HttpStatusCode.NoContent) {
-            _StatusLastConfirmedAt = _UiThreadLastActiveAt;
-            UiSynchronizationContext.Post(_ => ShowLastCommunicatedTimeStamp(), null);
-            return;
+        HttpStatusCode statusCode = HttpStatusCode.NotFound;
+        for (int attempts = 10; attempts > 0; attempts --) {
+            try {
+                statusCode = await TashAccessor.ConfirmAliveAsync(_ProcessId, _UiThreadLastActiveAt, ControllableProcessStatus.Busy);
+                if (statusCode != HttpStatusCode.NoContent) {
+                    continue;
+                }
+
+                _StatusLastConfirmedAt = _UiThreadLastActiveAt;
+                UiSynchronizationContext.Post(_ => ShowLastCommunicatedTimeStamp(), null);
+                return;
+            } catch {
+                statusCode = HttpStatusCode.InternalServerError;
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(1));
         }
 
         UiSynchronizationContext.Post(_ => { CommunicateCouldNotConfirmStatusToTashThenStop(statusCode); }, null);
