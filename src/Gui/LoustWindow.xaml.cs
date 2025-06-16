@@ -88,7 +88,8 @@ public partial class LoustWindow : IDisposable {
         if (File.Exists(_lastScriptFileName)) {
             File.Delete(_lastScriptFileName);
         }
-        await StartOrResumeAsync(false, false, false, IgnoreValidationCheckBox.IsChecked ?? false, IgnoreUnitTestCheckBox.IsChecked ?? false);
+        await StartOrResumeAsync(false, false, false, IgnoreValidationCheckBox.IsChecked ?? false,
+            IgnoreUnitTestCheckBox.IsChecked ?? false, IgnoreBroken.IsChecked ?? false);
     }
 
     private async void ResumeButtonClickAsync(object sender, RoutedEventArgs e) {
@@ -96,7 +97,8 @@ public partial class LoustWindow : IDisposable {
             return;
         }
 
-        await StartOrResumeAsync(false, false, false, IgnoreValidationCheckBox.IsChecked ?? false, IgnoreUnitTestCheckBox.IsChecked ?? false);
+        await StartOrResumeAsync(false, false, false, IgnoreValidationCheckBox.IsChecked ?? false,
+            IgnoreUnitTestCheckBox.IsChecked ?? false, IgnoreBroken.IsChecked ?? false);
     }
 
     private async void ShowUncoveredButtonClickAsync(object sender, RoutedEventArgs e) {
@@ -104,10 +106,11 @@ public partial class LoustWindow : IDisposable {
             return;
         }
 
-        await StartOrResumeAsync(true, false, false, false, false);
+        await StartOrResumeAsync(true, false, false, false, false, false);
     }
 
-    private async Task StartOrResumeAsync(bool showUncoveredOnly, bool oldestFirst, bool broken, bool ignoreValidation, bool ignoreUnitTest) {
+    private async Task StartOrResumeAsync(bool showUncoveredOnly, bool oldestFirst, bool broken, bool ignoreValidation,
+            bool ignoreUnitTest, bool ignoreBroken) {
         if (StatusConfirmedAt.Text == "") {
             MessageBox.Show(Properties.Resources.NotConnectedToTashYet, Properties.Resources.LoustWindowTitle, MessageBoxButton.OK, MessageBoxImage.Hand);
             return;
@@ -145,7 +148,8 @@ public partial class LoustWindow : IDisposable {
         }
 
         if (localHostIsAvailable && sqlServerIsAvailable && !showUncoveredOnly) {
-            IList<string> scriptFileNames = await coverageFinder.GetOrderedScriptFileNamesAsync(oldestFirst, broken, ignoreValidation, ignoreUnitTest);
+            IList<string> scriptFileNames = await coverageFinder.GetOrderedScriptFileNamesAsync(oldestFirst, broken, ignoreValidation,
+                ignoreUnitTest);
             if (oldestFirst) {
                 scriptFileNames = scriptFileNames.Reverse().ToList();
             }
@@ -169,6 +173,7 @@ public partial class LoustWindow : IDisposable {
                 }
 
                 if (broken && !await brokenTestCaseRepository.ContainsAsync(scriptFileName)) { continue; }
+                if (ignoreBroken && await brokenTestCaseRepository.ContainsAsync(scriptFileName)) { continue; }
 
                 firstScript = false;
                 string shortName = scriptFileName.Substring(scriptFileName.LastIndexOf('\\') + 1);
@@ -301,7 +306,8 @@ public partial class LoustWindow : IDisposable {
         if (File.Exists(_lastScriptFileName)) {
             File.Delete(_lastScriptFileName);
         }
-        await StartOrResumeAsync(false, true, false, IgnoreValidationCheckBox.IsChecked ?? false, IgnoreUnitTestCheckBox.IsChecked ?? false);
+        await StartOrResumeAsync(false, true, false, IgnoreValidationCheckBox.IsChecked ?? false,
+            IgnoreUnitTestCheckBox.IsChecked ?? false, IgnoreBroken.IsChecked ?? false);
     }
 
     private async void BrokenButtonClickAsync(object sender, RoutedEventArgs e) {
@@ -312,7 +318,7 @@ public partial class LoustWindow : IDisposable {
         if (File.Exists(_lastScriptFileName)) {
             File.Delete(_lastScriptFileName);
         }
-        await StartOrResumeAsync(false, false, true, false, false);
+        await StartOrResumeAsync(false, false, true, false, false, false);
     }
 
     private async void CrashTestButtonClickAsync(object sender, RoutedEventArgs e) {

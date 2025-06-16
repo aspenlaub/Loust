@@ -53,7 +53,8 @@ public class CoverageFinder : ICoverageFinder {
         return !File.Exists(_TestCaseFileNameShortener.CoverageFileForScriptFile(new Folder(Folder), scriptFileName));
     }
 
-    public async Task<IList<string>> GetOrderedScriptFileNamesAsync(bool byLastWriteTime, bool ignoreUncovered, bool ignoreValidation, bool ignoreUnitTest) {
+    public async Task<IList<string>> GetOrderedScriptFileNamesAsync(bool byLastWriteTime, bool ignoreUncovered, bool ignoreValidation,
+            bool ignoreUnitTest) {
         await RefreshAsync(byLastWriteTime, ignoreUncovered);
         return OrderedScriptFileNames
                .Where(x => !x.Contains("Validation") || !ignoreValidation)

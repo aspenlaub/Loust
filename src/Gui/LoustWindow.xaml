@@ -21,21 +21,22 @@
             <ColumnDefinition Width="20*" />
             <ColumnDefinition Width="15*" />
         </Grid.ColumnDefinitions>
-        <Label Grid.Column="0" Grid.Row="0" Foreground="Black" Margin="10,5,0,0">Run all scripts</Label>
+        <Label Grid.Column="0" Grid.Row="0" Foreground="Black" Margin="5,5,0,0">Run all scripts</Label>
+        <Label Grid.Column="1" Grid.Row="0" Margin="10,5,0,0" HorizontalAlignment="Right">Tash ⮀</Label>
+        <TextBox Grid.Column="2" Grid.Row="0" Padding="2,4,2,2" Margin="10,5,0,0" Name="StatusConfirmedAt" IsReadOnly="True" Background="Wheat" />
         <RichTextBox Name="AnalysisResultBox" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="7" Margin="10" Padding="5" Background="Black" Foreground="Wheat" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <FlowDocument Name="AnalysisResult" />
         </RichTextBox>
-        <Label Grid.Column="2" Grid.Row="0" Margin="10,5,0,0">Tash ⮀</Label>
-        <TextBox Grid.Column="2" Grid.Row="1" Padding="2,3,2,3" Margin="15,5,20,0" Name="StatusConfirmedAt" IsReadOnly="True" Background="Wheat" />
         <Button Grid.Column="3" Grid.Row="0" Name="StartButton" Margin="10,8,10,0" Padding="10,2,10,2" Background="Black" Foreground="Wheat" Click="StartButtonClickAsync">_Start</Button>
         <Button Grid.Column="4" Grid.Row="0" Name="ResumeButton" Margin="10,8,10,0" Padding="10,2,10,2" Background="Black" Foreground="Wheat" Click="ResumeButtonClickAsync">_Resume</Button>
         <Button Grid.Column="5" Grid.Row="0" Name="OldestFirstButton" Margin="10,8,10,0" Padding="10,2,10,2" Background="Black" Foreground="Wheat" Click="OldestFirstButtonClickAsync">_Oldest First</Button>
         <Button Grid.Column="6" Grid.Row="0" Name="BrokenButton" Margin="10,8,10,0" Padding="10,2,10,2" Background="Black" Foreground="Wheat" Click="BrokenButtonClickAsync" ToolTip="Broken tests only, do not reset erroneous Oust if Stop check mark is set">_Broken</Button>
+        <CheckBox Grid.Column="0" Grid.Row="1" Name="IgnoreValidationCheckBox" Margin="10,10,10,0" Padding="10,2,10,0">No Validation</CheckBox>
+        <CheckBox Grid.Column="1" Grid.Row="1" Name="IgnoreUnitTestCheckBox" Margin="10,10,10,0" Padding="10,2,10,0">No Unit Test</CheckBox>
+        <CheckBox Grid.Column="2" Grid.Row="1" Name="IgnoreBroken" Margin="10,10,10,0" Padding="10,2,10,0">Ignore Broken</CheckBox>
         <CheckBox Grid.Column="3" Grid.Row="1" Name="StopCheckBox" Margin="10,10,10,0" Padding="10,2,10,0">Stop</CheckBox>
         <Button Grid.Column="4" Grid.Row="1" Name="ShowUncoveredButton" Margin="10,8,10,0" Padding="10,2,10,2" Background="Black" Foreground="Wheat" Click="ShowUncoveredButtonClickAsync">Show _Uncovered</Button>
         <Button Grid.Column="5" Grid.Row="1" Name="CrashTestButton" Margin="10,8,10,0" Padding="10,2,10,2" Background="Black" Foreground="Wheat" Click="CrashTestButtonClickAsync">Crash Test</Button>
         <Button Grid.Column="6" Grid.Row="1" Name="CloseButton" Margin="10,8,10,0" Padding="10,2,10,2" Background="Black" Foreground="Wheat" Click="CloseButtonClickAsync">_Close</Button>
-        <CheckBox Grid.Column="0" Grid.Row="1" Name="IgnoreValidationCheckBox" Margin="10,10,10,0" Padding="10,2,10,0">No Validation</CheckBox>
-        <CheckBox Grid.Column="1" Grid.Row="1" Name="IgnoreUnitTestCheckBox" Margin="10,10,10,0" Padding="10,2,10,0">No Unit Test</CheckBox>
     </Grid>
 </Window>
