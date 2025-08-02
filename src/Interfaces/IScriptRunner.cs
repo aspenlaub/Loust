@@ -6,4 +6,5 @@ namespace Aspenlaub.Net.GitHub.CSharp.Loust.Interfaces;
 
 public interface IScriptRunner {
     Task<IFindIdleProcessResult> RunScriptAsync(string fileName, IErrorsAndInfos errorsAndInfos);
+    Task<bool> RecoverScriptAsync(string fileName);
 }

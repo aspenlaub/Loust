@@ -10,20 +10,14 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Loust.Core;
 
-public class BrokenTestCaseRepository : IBrokenTestCaseRepository {
-    private readonly ITestCaseFileNameShortener _TestCaseFileNameShortener;
+public class BrokenTestCaseRepository(IFolderResolver folderResolver, ITestCaseFileNameShortener testCaseFileNameShortener)
+        : IBrokenTestCaseRepository {
     private IFolder _Folder;
-    private readonly IFolderResolver _FolderResolver;
-
-    public BrokenTestCaseRepository(IFolderResolver folderResolver, ITestCaseFileNameShortener testCaseFileNameShortener) {
-        _TestCaseFileNameShortener = testCaseFileNameShortener;
-        _FolderResolver = folderResolver;
-    }
 
     public async Task RegisterAsync(string scriptFileName, IList<string> errors) {
         await SetFolderIfNecessaryAsync();
 
-        string shortName = _TestCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
+        string shortName = testCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
         string fileName = _Folder.FullName + '\\' + shortName;
         string contents =
             $"Test case {scriptFileName.Substring(scriptFileName.LastIndexOf('\\'))} failed on {Environment.MachineName} at {DateTime.Now.ToShortDateString()} {DateTime.Now.ToShortTimeString()}";
@@ -36,7 +30,7 @@ public class BrokenTestCaseRepository : IBrokenTestCaseRepository {
     public async Task RemoveAsync(string scriptFileName) {
         await SetFolderIfNecessaryAsync();
 
-        string shortName = _TestCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
+        string shortName = testCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
         string fileName = _Folder.FullName + '\\' + shortName;
         if (!File.Exists(fileName)) { return; }
 
@@ -46,7 +40,7 @@ public class BrokenTestCaseRepository : IBrokenTestCaseRepository {
     public async Task<bool> ContainsAsync(string scriptFileName) {
         await SetFolderIfNecessaryAsync();
 
-        string shortName = _TestCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
+        string shortName = testCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
         string fileName = _Folder.FullName + '\\' + shortName;
         return File.Exists(fileName);
     }
@@ -61,7 +55,7 @@ public class BrokenTestCaseRepository : IBrokenTestCaseRepository {
         if (_Folder != null) { return; }
 
         var errorsAndInfos = new ErrorsAndInfos();
-        _Folder = await _FolderResolver.ResolveAsync(@"$(WampRoot)\temp\brokentests\", errorsAndInfos);
+        _Folder = await folderResolver.ResolveAsync(@"$(WampRoot)\temp\brokentests\", errorsAndInfos);
         _Folder.CreateIfNecessary();
         if (errorsAndInfos.AnyErrors()) {
             throw new Exception(errorsAndInfos.ErrorsToString());

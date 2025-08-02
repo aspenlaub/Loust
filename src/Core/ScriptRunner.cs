@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Tash;
 using Aspenlaub.Net.GitHub.CSharp.TashClient.Components;
@@ -14,6 +15,19 @@ public class ScriptRunner(IDvinRepository dvinRepository, ISimpleLogger simpleLo
         ILogConfiguration logConfiguration, IMethodNamesFromStackFramesExtractor methodNamesFromStackFramesExtractor)
             : IScriptRunner {
     public async Task<IFindIdleProcessResult> RunScriptAsync(string fileName, IErrorsAndInfos errorsAndInfos) {
+        return await RunOrRecoverScriptAsync(fileName, errorsAndInfos, false);
+    }
+
+    public async Task<bool> RecoverScriptAsync(string fileName) {
+        var errorsAndInfos = new ErrorsAndInfos();
+        IFindIdleProcessResult result = await RunOrRecoverScriptAsync(fileName, errorsAndInfos, true);
+        if (errorsAndInfos.AnyErrors()) { return false; }
+
+        return result.BestProcessStatus != ControllableProcessStatus.Busy
+            && result.BestProcessStatus != ControllableProcessStatus.Dead;
+    }
+
+    private async Task<IFindIdleProcessResult> RunOrRecoverScriptAsync(string fileName, IErrorsAndInfos errorsAndInfos, bool recover) {
         var tashAccessor = new TashAccessor(dvinRepository, simpleLogger, logConfiguration, methodNamesFromStackFramesExtractor);
         IFindIdleProcessResult findIdleProcessResult = await tashAccessor.FindIdleProcess(p => p.Title == ControlledApplication.QualifiedName);
         switch (findIdleProcessResult.BestProcessStatus) {
@@ -41,19 +55,23 @@ public class ScriptRunner(IDvinRepository dvinRepository, ISimpleLogger simpleLo
             return findIdleProcessResult;
         }
 
-        await RemotelyStartCoverageAsync(process, tashAccessor, errorsAndInfos);
+        if (!recover) {
+            await RemotelyStartCoverageAsync(process, tashAccessor, errorsAndInfos);
+            if (errorsAndInfos.AnyErrors()) {
+                return findIdleProcessResult;
+            }
+        }
+
+        await RemotelyExecuteScriptAsync(process, tashAccessor, errorsAndInfos, recover);
         if (errorsAndInfos.AnyErrors()) {
             return findIdleProcessResult;
         }
 
-        await RemotelyExecuteScriptAsync(process, tashAccessor, errorsAndInfos);
-        if (errorsAndInfos.AnyErrors()) {
-            return findIdleProcessResult;
-        }
-
-        await RemotelyStopCoverageAsync(process, tashAccessor, errorsAndInfos);
-        if (errorsAndInfos.AnyErrors()) {
-            return findIdleProcessResult;
+        if (!recover) {
+            await RemotelyStopCoverageAsync(process, tashAccessor, errorsAndInfos);
+            if (errorsAndInfos.AnyErrors()) {
+                return findIdleProcessResult;
+            }
         }
 
         await RemotelyResetAsync(process, tashAccessor, errorsAndInfos);
@@ -81,12 +99,13 @@ public class ScriptRunner(IDvinRepository dvinRepository, ISimpleLogger simpleLo
         errorsAndInfos.Errors.Add(task.Status == ControllableProcessTaskStatus.Failed && !string.IsNullOrWhiteSpace(task.ErrorMessage) ? task.ErrorMessage : $"Script select request failed ({task.Status})");
     }
 
-    private static async Task RemotelyExecuteScriptAsync(ControllableProcess process, ITashAccessor tashAccessor, IErrorsAndInfos errorsAndInfos) {
+    private static async Task RemotelyExecuteScriptAsync(ControllableProcess process, ITashAccessor tashAccessor,
+            IErrorsAndInfos errorsAndInfos, bool recover) {
         var task = new ControllableProcessTask {
             Id = Guid.NewGuid(),
             ProcessId = process.ProcessId,
             Type = ControllableProcessTaskType.PressButton,
-            ControlName = "Play",
+            ControlName = recover ? "Recover" : "Play",
             Status = ControllableProcessTaskStatus.Requested
         };
         HttpStatusCode status = await tashAccessor.PutControllableProcessTaskAsync(task);

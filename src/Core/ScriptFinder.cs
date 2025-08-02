@@ -8,23 +8,17 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Loust.Core;
 
-public class ScriptFinder : IScriptFinder {
-    private readonly IFolderResolver _FolderResolver;
-
-    public ScriptFinder(IFolderResolver folderResolver) {
-        _FolderResolver = folderResolver;
-    }
-
+public class ScriptFinder(IFolderResolver folderResolver) : IScriptFinder {
     public async Task<IEnumerable<string>> FindScriptFileNamesAsync(IErrorsAndInfos errorsAndInfos) {
         string folder = await ScriptFolderAsync(errorsAndInfos);
         string[] potentialFiles = Directory.GetFiles(folder, "*.xml", SearchOption.AllDirectories);
-        var potentialFileContents = potentialFiles.Select(f => File.ReadAllText(f)).ToList();
+        var potentialFileContents = potentialFiles.Select(File.ReadAllText).ToList();
 
         return potentialFiles.Where(f => !IsSubScript(f, potentialFileContents)).ToList();
     }
 
     public async Task<string> ScriptFolderAsync(IErrorsAndInfos errorsAndInfos) {
-        string folder = (await _FolderResolver.ResolveAsync(@"$(MainUserFolder)\" + ControlledApplication.Name + @"\Production\Dump", errorsAndInfos)).FullName + "\\";
+        string folder = (await folderResolver.ResolveAsync(@"$(MainUserFolder)\" + ControlledApplication.Name + @"\Production\Dump", errorsAndInfos)).FullName + "\\";
         return folder;
     }
 

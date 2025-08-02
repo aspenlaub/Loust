@@ -214,7 +214,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Loust.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Running script &apos;{0}&apos;...
+        ///   Looks up a localized string similar to Running script &apos;{0}&apos;....
         /// </summary>
         internal static string RunningScript {
             get {
@@ -268,11 +268,38 @@ namespace Aspenlaub.Net.GitHub.CSharp.Loust.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Script recovery ended.
+        /// </summary>
+        internal static string ScriptRecoveryEnded {
+            get {
+                return ResourceManager.GetString("ScriptRecoveryEnded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not recover from script failure.
+        /// </summary>
+        internal static string ScriptRecoveryFailed {
+            get {
+                return ResourceManager.GetString("ScriptRecoveryFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SQL server is not available.
         /// </summary>
         internal static string SqlServerNotAvailable {
             get {
                 return ResourceManager.GetString("SqlServerNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempting to recover from script failure.
+        /// </summary>
+        internal static string StartScriptRecovery {
+            get {
+                return ResourceManager.GetString("StartScriptRecovery", resourceCulture);
             }
         }
     }

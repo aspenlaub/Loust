@@ -6,7 +6,7 @@
     Version 2.0
     
     The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
+    that is mostly human-readable. The generation and parsing of the 
     various data types are done through the TypeConverter classes 
     associated with the data types.
     
@@ -127,7 +127,7 @@
     <value>Please close the application and visit sodwat</value>
   </data>
   <data name="RunningScript" xml:space="preserve">
-    <value>Running script '{0}'..</value>
+    <value>Running script '{0}'...</value>
   </data>
   <data name="ScriptExecutedWithoutErrors" xml:space="preserve">
     <value>Script executed without errors</value>
@@ -188,5 +188,14 @@
   </data>
   <data name="NotConnectedToTashYet" xml:space="preserve">
     <value>Tash connection has not yet been established</value>
+  </data>
+  <data name="StartScriptRecovery" xml:space="preserve">
+    <value>Attempting to recover from script failure</value>
+  </data>
+  <data name="ScriptRecoveryEnded" xml:space="preserve">
+    <value>Script recovery ended</value>
+  </data>
+  <data name="ScriptRecoveryFailed" xml:space="preserve">
+    <value>Could not recover from script failure</value>
   </data>
 </root>
