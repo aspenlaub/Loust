@@ -170,6 +170,14 @@ class LoustWorker(LoustWindow window, IContainer container, ITashAccessor tashAc
             window.AnalysisResultBox.ScrollToEnd();
             if (!tryAgain) {
                 await brokenTestCaseRepository.RegisterAsync(scriptFileName, errorsAndInfos.Errors);
+                if (window.StopCheckBox.IsChecked == true) {
+                    p = new Paragraph(new Run(Properties.Resources.PleaseRunScriptRecoveryManually)) {
+                        Foreground = Brushes.Yellow
+                    };
+                    window.AnalysisResult.Blocks.Add(p);
+                    window.AnalysisResultBox.ScrollToEnd();
+                    return;
+                }
                 p = new Paragraph(new Run(Properties.Resources.StartScriptRecovery)) {
                     Foreground = Brushes.Yellow
                 };
@@ -181,9 +189,6 @@ class LoustWorker(LoustWindow window, IContainer container, ITashAccessor tashAc
                 };
                 window.AnalysisResult.Blocks.Add(p);
                 window.AnalysisResultBox.ScrollToEnd();
-                if (window.StopCheckBox.IsChecked == true) {
-                    return;
-                }
             } else if (findIdleProcessResult.BestProcessStatus != ControllableProcessStatus.Dead || window.Abort) {
                 continue;
             }

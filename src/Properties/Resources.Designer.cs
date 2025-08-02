@@ -196,6 +196,15 @@ namespace Aspenlaub.Net.GitHub.CSharp.Loust.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please run script recovery if necessary.
+        /// </summary>
+        internal static string PleaseRunScriptRecoveryManually {
+            get {
+                return ResourceManager.GetString("PleaseRunScriptRecoveryManually", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Process is busy, please retry later.
         /// </summary>
         internal static string ProcessIsBusy {
