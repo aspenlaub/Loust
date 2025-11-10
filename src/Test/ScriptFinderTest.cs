@@ -8,6 +8,7 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+[assembly: DoNotParallelize]
 namespace Aspenlaub.Net.GitHub.CSharp.Loust.Test;
 
 [TestClass]
@@ -19,10 +20,10 @@ public class ScriptFinderTest {
         var errorsAndInfos = new ErrorsAndInfos();
         var fileNames = (await sut.FindScriptFileNamesAsync(errorsAndInfos)).ToList();
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-        Assert.IsTrue(fileNames.Count > 10);
+        Assert.IsGreaterThan(10, fileNames.Count);
         foreach (string fileName in fileNames) {
             Assert.IsTrue(File.Exists(fileName));
-            Assert.IsTrue(fileName.EndsWith(".xml"));
+            Assert.EndsWith(".xml", fileName);
         }
     }
 }

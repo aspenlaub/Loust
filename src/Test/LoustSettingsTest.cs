@@ -18,7 +18,7 @@ public class LoustSettingsTest {
         var errorsAndInfos = new ErrorsAndInfos();
         LoustSettings settings = await container.Resolve<ISecretRepository>().GetAsync(secret, errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-        Assert.IsTrue(!string.IsNullOrEmpty(settings.LastChangedPhpFilesUrl));
-        Assert.IsTrue(!string.IsNullOrEmpty(settings.TrivialTest));
+        Assert.IsFalse(string.IsNullOrEmpty(settings.LastChangedPhpFilesUrl));
+        Assert.IsFalse(string.IsNullOrEmpty(settings.TrivialTest));
     }
 }

@@ -182,7 +182,7 @@ public partial class LoustWindow : IDisposable {
             await Task.Delay(TimeSpan.FromSeconds(1));
         }
 
-        UiSynchronizationContext.Post(_ => { CommunicateCouldNotConfirmStatusToTashThenStop(statusCode); }, null);
+        UiSynchronizationContext.Post(_ => CommunicateCouldNotConfirmStatusToTashThenStop(statusCode), null);
     }
 
     private void CommunicateCouldNotConfirmStatusToTashThenStop(HttpStatusCode statusCode) {
