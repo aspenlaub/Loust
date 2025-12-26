@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Loust.csproj" />
+  <Project Path="Test/Loust.Test.csproj" />
+</Solution>
