@@ -48,9 +48,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="10.0.1" />
-    <PackageReference Include="TashClient" Version="2.0.2330.1344" />
-    <PackageReference Include="VishizhukelNet" Version="2.0.2331.408" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.2" />
+    <PackageReference Include="TashClient" Version="2.0.2365.1334" />
+    <PackageReference Include="VishizhukelNet" Version="2.0.2366.986" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
