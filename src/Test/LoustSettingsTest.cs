@@ -13,7 +13,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Loust.Test;
 public class LoustSettingsTest {
     [TestMethod]
     public async Task CanGetLoustSettings() {
-        IContainer container = new ContainerBuilder().UsePegh(nameof(LoustSettingsTest), new DummyCsArgumentPrompter()).Build();
+        IContainer container = new ContainerBuilder().UsePegh(nameof(LoustSettingsTest)).Build();
         var secret = new SecretLoustSettings();
         var errorsAndInfos = new ErrorsAndInfos();
         LoustSettings settings = await container.Resolve<ISecretRepository>().GetAsync(secret, errorsAndInfos);
