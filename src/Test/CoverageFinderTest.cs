@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Core;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Seoa.Extensions;
+using Aspenlaub.Net.GitHub.CSharp.Skladasu.Entities;
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -30,17 +30,17 @@ public class CoverageFinderTest {
     public async Task CanGetCoverageFileForScriptFile() {
         var errorsAndInfos = new ErrorsAndInfos();
         LoustSettings loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         string trivialTest = loustSettings.TrivialTest;
         string scriptFileName = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos) + trivialTest;
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         Assert.IsTrue(File.Exists(scriptFileName));
         var sut = new TestCaseFileNameShortener();
         IFolder folder = await _Container.Resolve<IFolderResolver>().ResolveAsync(@"$(WampRoot)\temp\coverage", errorsAndInfos);
         string coverageFileName = sut.CoverageFileForScriptFile(folder, scriptFileName);
         string expectedCoverageFileName = folder.FullName + @"\oust_"
                                                           + trivialTest.Substring(trivialTest.LastIndexOf(@"\", StringComparison.InvariantCulture) + 1).ToLower().Replace(' ', '_').Replace(".xml", ".txt");
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         Assert.AreEqual(expectedCoverageFileName, coverageFileName);
     }
 

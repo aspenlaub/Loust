@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Skladasu.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Skladasu.Extensions;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Loust.Core;
 

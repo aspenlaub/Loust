@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Core;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
+using Aspenlaub.Net.GitHub.CSharp.Seoa.Extensions;
+using Aspenlaub.Net.GitHub.CSharp.Skladasu.Entities;
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -19,7 +19,7 @@ public class ScriptFinderTest {
         IScriptFinder sut = container.Resolve<IScriptFinder>();
         var errorsAndInfos = new ErrorsAndInfos();
         var fileNames = (await sut.FindScriptFileNamesAsync(errorsAndInfos)).ToList();
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         Assert.IsGreaterThan(10, fileNames.Count);
         foreach (string fileName in fileNames) {
             Assert.IsTrue(File.Exists(fileName));

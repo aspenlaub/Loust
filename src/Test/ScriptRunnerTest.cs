@@ -4,9 +4,10 @@ using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Core;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Seoa.Extensions;
+using Aspenlaub.Net.GitHub.CSharp.Skladasu.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Skladasu.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Tash;
 using Aspenlaub.Net.GitHub.CSharp.TashClient.Interfaces;
 using Autofac;
@@ -31,16 +32,16 @@ public class ScriptRunnerTest {
         IScriptRunner sut = _Container.Resolve<IScriptRunner>();
         var errorsAndInfos = new ErrorsAndInfos();
         string folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         LoustSettings loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         string fileName = Directory.GetFiles(folder, loustSettings.ScriptWildcard, SearchOption.AllDirectories).MinBy(s => s);
         Assert.IsNotNull(fileName);
         IFindIdleProcessResult findIdleProcessResult = await sut.RunScriptAsync(fileName, errorsAndInfos);
         if (findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.DoesNotExist || findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.Dead) {
             Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")));
         }
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
     }
 
     [TestMethod]
@@ -48,16 +49,16 @@ public class ScriptRunnerTest {
         IScriptRunner sut = _Container.Resolve<IScriptRunner>();
         var errorsAndInfos = new ErrorsAndInfos();
         string folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         LoustSettings loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         string fileName = Directory.GetFiles(folder, loustSettings.AnotherScriptWildcard, SearchOption.AllDirectories).MinBy(s => s);
         Assert.IsNotNull(fileName);
         IFindIdleProcessResult findIdleProcessResult = await sut.RunScriptAsync(fileName, errorsAndInfos);
         if (findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.DoesNotExist || findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.Dead) {
             Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")));
         }
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
     }
 
     [TestMethod]
@@ -65,9 +66,9 @@ public class ScriptRunnerTest {
         IScriptRunner sut = _Container.Resolve<IScriptRunner>();
         var errorsAndInfos = new ErrorsAndInfos();
         string folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         LoustSettings loustSettings = await _SecretRepository.GetAsync(new SecretLoustSettings(), errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         string fileName = Directory.GetFiles(folder, loustSettings.YetAnotherScriptWildcard, SearchOption.AllDirectories).MinBy(s => s);
         Assert.IsNotNull(fileName);
         await TryRunningYetAnotherScript(sut, fileName, errorsAndInfos);
@@ -75,7 +76,7 @@ public class ScriptRunnerTest {
             errorsAndInfos = new ErrorsAndInfos();
             await TryRunningYetAnotherScript(sut, fileName, errorsAndInfos);
         }
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
     }
 
     private static async Task TryRunningYetAnotherScript(IScriptRunner sut, string fileName, IErrorsAndInfos errorsAndInfos) {
@@ -91,7 +92,7 @@ public class ScriptRunnerTest {
         ICoverageFinder coverageFinder = _Container.Resolve<ICoverageFinder>();
         var errorsAndInfos = new ErrorsAndInfos();
         string folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         var fileNames = Directory.GetFiles(folder, "*unit*test*.xml").OrderBy(s => s).ToList();
         fileNames = fileNames.Where(f => coverageFinder.NumberOfResults(shortener.CoverageFileForScriptFileShortName(f)) == 0).ToList();
         for (int i = 0; i < fileNames.Count && coverageFinder.NumberOfResults("*unit*test*.txt") < 25; i++) {
@@ -100,7 +101,7 @@ public class ScriptRunnerTest {
             if (findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.DoesNotExist || findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.Dead) {
                 Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")));
             }
-            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+            Assert.That.ThereWereNoErrors(errorsAndInfos);
         }
     }
 }
