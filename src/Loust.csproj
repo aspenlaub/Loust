@@ -48,8 +48,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="TashClient" Version="2.0.2405.584" />
-    <PackageReference Include="VishizhukelNet" Version="2.0.2405.613" />
+    <PackageReference Include="TashClient" Version="2.0.2405.931" />
+    <PackageReference Include="VishizhukelNet" Version="2.0.2405.1047" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
