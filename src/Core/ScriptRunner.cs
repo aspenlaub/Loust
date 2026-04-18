@@ -22,10 +22,9 @@ public class ScriptRunner(IDvinRepository dvinRepository, ISimpleLogger simpleLo
     public async Task<bool> RecoverScriptAsync(string fileName) {
         var errorsAndInfos = new ErrorsAndInfos();
         IFindIdleProcessResult result = await RunOrRecoverScriptAsync(fileName, errorsAndInfos, true);
-        if (errorsAndInfos.AnyErrors()) { return false; }
-
-        return result.BestProcessStatus != ControllableProcessStatus.Busy
-            && result.BestProcessStatus != ControllableProcessStatus.Dead;
+        return !errorsAndInfos.AnyErrors()
+               && result.BestProcessStatus != ControllableProcessStatus.Busy
+               && result.BestProcessStatus != ControllableProcessStatus.Dead;
     }
 
     private async Task<IFindIdleProcessResult> RunOrRecoverScriptAsync(string fileName, IErrorsAndInfos errorsAndInfos, bool recover) {
@@ -41,6 +40,10 @@ public class ScriptRunner(IDvinRepository dvinRepository, ISimpleLogger simpleLo
             case ControllableProcessStatus.Busy:
                 errorsAndInfos.Errors.Add(Properties.Resources.ProcessIsBusy);
                 return findIdleProcessResult;
+            case ControllableProcessStatus.Idle:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
 
         ControllableProcess process = findIdleProcessResult.ControllableProcess;
@@ -115,10 +118,12 @@ public class ScriptRunner(IDvinRepository dvinRepository, ISimpleLogger simpleLo
             return;
         }
 
-        task = await tashAccessor.AwaitCompletionAsync(task.Id, 600000);
+        int timeoutInMilliseconds = (int)Math.Ceiling(TimeSpan.FromMinutes(20).TotalMilliseconds);
+        task = await tashAccessor.AwaitCompletionAsync(task.Id, timeoutInMilliseconds);
         if (task.Status == ControllableProcessTaskStatus.Completed) { return; }
 
-        errorsAndInfos.Errors.Add(task.Status == ControllableProcessTaskStatus.Failed && !string.IsNullOrWhiteSpace(task.ErrorMessage) ? task.ErrorMessage : $"Play request failed ({task.Status})");
+        errorsAndInfos.Errors.Add(task.Status == ControllableProcessTaskStatus.Failed
+            && !string.IsNullOrWhiteSpace(task.ErrorMessage) ? task.ErrorMessage : $"Play request failed ({task.Status}) or timed out");
     }
 
     private static async Task RemotelyStartCoverageAsync(ControllableProcess process, ITashAccessor tashAccessor, IErrorsAndInfos errorsAndInfos) {
