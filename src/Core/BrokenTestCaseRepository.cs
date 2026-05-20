@@ -13,7 +13,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Loust.Core;
 
 public class BrokenTestCaseRepository(IFolderResolver folderResolver, ITestCaseFileNameShortener testCaseFileNameShortener)
         : IBrokenTestCaseRepository {
-    private IFolder _Folder;
+    private IFolder _Folder, _ReTestFolder;
 
     public async Task RegisterAsync(string scriptFileName, IList<string> errors) {
         await SetFolderIfNecessaryAsync();
@@ -26,6 +26,8 @@ public class BrokenTestCaseRepository(IFolderResolver folderResolver, ITestCaseF
             contents = contents + "\r\n" + string.Join("\r\n", errors);
         }
         await File.WriteAllTextAsync(fileName, contents);
+        string reTestFileName = _ReTestFolder.FullName + '\\' + shortName;
+        await File.WriteAllTextAsync(reTestFileName, contents);
     }
 
     public async Task RemoveAsync(string scriptFileName) {
@@ -46,6 +48,14 @@ public class BrokenTestCaseRepository(IFolderResolver folderResolver, ITestCaseF
         return File.Exists(fileName);
     }
 
+    public async Task<bool> RetestContainsAsync(string scriptFileName) {
+        await SetFolderIfNecessaryAsync();
+
+        string shortName = testCaseFileNameShortener.CoverageFileForScriptFileShortName(scriptFileName);
+        string fileName = _ReTestFolder.FullName + '\\' + shortName;
+        return File.Exists(fileName);
+    }
+
     public async Task<int> NumberOfBrokenTestsAsync() {
         await SetFolderIfNecessaryAsync();
 
@@ -61,6 +71,10 @@ public class BrokenTestCaseRepository(IFolderResolver folderResolver, ITestCaseF
         if (errorsAndInfos.AnyErrors()) {
             throw new Exception(errorsAndInfos.ErrorsToString());
         }
-
+        _ReTestFolder = await folderResolver.ResolveAsync(@"$(WampRoot)\temp\retest\", errorsAndInfos);
+        _ReTestFolder.CreateIfNecessary();
+        if (errorsAndInfos.AnyErrors()) {
+            throw new Exception(errorsAndInfos.ErrorsToString());
+        }
     }
 }

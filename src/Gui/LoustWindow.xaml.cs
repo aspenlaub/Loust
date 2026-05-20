@@ -83,7 +83,7 @@ public partial class LoustWindow : IDisposable {
         if (File.Exists(Constants.LastScriptFileName)) {
             File.Delete(Constants.LastScriptFileName);
         }
-        await _LoustWorker.StartOrResumeAsync(false, false, false, IgnoreValidationCheckBox.IsChecked ?? false,
+        await _LoustWorker.StartOrResumeAsync(false, false, false, false, IgnoreValidationCheckBox.IsChecked ?? false,
             IgnoreUnitTestCheckBox.IsChecked ?? false, IgnoreBroken.IsChecked ?? false);
     }
 
@@ -92,7 +92,7 @@ public partial class LoustWindow : IDisposable {
             return;
         }
 
-        await _LoustWorker.StartOrResumeAsync(false, false, false, IgnoreValidationCheckBox.IsChecked ?? false,
+        await _LoustWorker.StartOrResumeAsync(false, false, false, false, IgnoreValidationCheckBox.IsChecked ?? false,
             IgnoreUnitTestCheckBox.IsChecked ?? false, IgnoreBroken.IsChecked ?? false);
     }
 
@@ -101,7 +101,7 @@ public partial class LoustWindow : IDisposable {
             return;
         }
 
-        await _LoustWorker.StartOrResumeAsync(true, false, false, false, false, false);
+        await _LoustWorker.StartOrResumeAsync(true, false, false, false, false, false, false);
     }
 
     private async void OldestFirstButtonClickAsync(object sender, RoutedEventArgs e) {
@@ -112,7 +112,7 @@ public partial class LoustWindow : IDisposable {
         if (File.Exists(Constants.LastScriptFileName)) {
             File.Delete(Constants.LastScriptFileName);
         }
-        await _LoustWorker.StartOrResumeAsync(false, true, false, IgnoreValidationCheckBox.IsChecked ?? false,
+        await _LoustWorker.StartOrResumeAsync(false, true, false, false, IgnoreValidationCheckBox.IsChecked ?? false,
             IgnoreUnitTestCheckBox.IsChecked ?? false, IgnoreBroken.IsChecked ?? false);
     }
 
@@ -124,7 +124,18 @@ public partial class LoustWindow : IDisposable {
         if (File.Exists(Constants.LastScriptFileName)) {
             File.Delete(Constants.LastScriptFileName);
         }
-        await _LoustWorker.StartOrResumeAsync(false, false, true, false, false, false);
+        await _LoustWorker.StartOrResumeAsync(false, false, true, false, false, false, false);
+    }
+
+    private async void RetestButtonClickAsync(object sender, RoutedEventArgs e) {
+        if (IsExecuting) {
+            return;
+        }
+
+        if (File.Exists(Constants.LastScriptFileName)) {
+            File.Delete(Constants.LastScriptFileName);
+        }
+        await _LoustWorker.StartOrResumeAsync(false, false, false, true, false, false, false);
     }
 
     private async void CrashTestButtonClickAsync(object sender, RoutedEventArgs e) {

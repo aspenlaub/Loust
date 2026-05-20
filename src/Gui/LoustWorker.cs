@@ -19,9 +19,9 @@ using Autofac;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Loust.Gui;
 
-class LoustWorker(LoustWindow window, IContainer container, ITashAccessor tashAccessor) {
+internal class LoustWorker(LoustWindow window, IContainer container, ITashAccessor tashAccessor) {
     public async Task StartOrResumeAsync(bool showUncoveredOnly, bool oldestFirst,
-            bool broken, bool ignoreValidation,
+            bool broken, bool reTest, bool ignoreValidation,
             bool ignoreUnitTest, bool ignoreBroken) {
         if (window.StatusConfirmedAt.Text == "") {
             MessageBox.Show(Properties.Resources.NotConnectedToTashYet, Properties.Resources.LoustWindowTitle, MessageBoxButton.OK, MessageBoxImage.Hand);
@@ -77,7 +77,7 @@ class LoustWorker(LoustWindow window, IContainer container, ITashAccessor tashAc
                 window.AnalysisResult.Blocks.Add(p);
                 window.AnalysisResultBox.ScrollToEnd();
             }
-            await ProcessScriptFileNames(broken, ignoreBroken, scriptFileNames, brokenTestCaseRepository,
+            await ProcessScriptFileNames(broken, reTest, ignoreBroken, scriptFileNames, brokenTestCaseRepository,
                 lastScriptFound, lastScriptName, runner);
         }
 
@@ -94,8 +94,9 @@ class LoustWorker(LoustWindow window, IContainer container, ITashAccessor tashAc
         window.AnalysisResultBox.ScrollToEnd();
     }
 
-    private async Task ProcessScriptFileNames(bool broken, bool ignoreBroken, IList<string> scriptFileNames, IBrokenTestCaseRepository brokenTestCaseRepository, bool lastScriptFound,
-                                              string lastScriptName, IScriptRunner runner) {
+    private async Task ProcessScriptFileNames(bool broken, bool reTest, bool ignoreBroken,
+            IList<string> scriptFileNames, IBrokenTestCaseRepository brokenTestCaseRepository, bool lastScriptFound,
+            string lastScriptName, IScriptRunner runner) {
         bool firstScript = true;
         // ReSharper disable once LoopCanBePartlyConvertedToQuery
         foreach (string scriptFileName in scriptFileNames) {
@@ -105,6 +106,7 @@ class LoustWorker(LoustWindow window, IContainer container, ITashAccessor tashAc
 
             if (broken && !await brokenTestCaseRepository.ContainsAsync(scriptFileName)) { continue; }
             if (ignoreBroken && await brokenTestCaseRepository.ContainsAsync(scriptFileName)) { continue; }
+            if (reTest && !await brokenTestCaseRepository.RetestContainsAsync(scriptFileName)) { continue; }
 
             firstScript = false;
             string shortName = scriptFileName.Substring(scriptFileName.LastIndexOf('\\') + 1);
@@ -129,7 +131,7 @@ class LoustWorker(LoustWindow window, IContainer container, ITashAccessor tashAc
         int attempts = await brokenTestCaseRepository.ContainsAsync(scriptFileName) ? 1 : 3;
         do {
             tryAgain = false;
-            Paragraph p = new Paragraph(new Run(string.Format(Properties.Resources.RunningScript, shortName)));
+            var p = new Paragraph(new Run(string.Format(Properties.Resources.RunningScript, shortName)));
             window.AnalysisResult.Blocks.Add(p);
             var errorsAndInfos = new ErrorsAndInfos();
             IFindIdleProcessResult findIdleProcessResult = await runner.RunScriptAsync(scriptFileName, errorsAndInfos);

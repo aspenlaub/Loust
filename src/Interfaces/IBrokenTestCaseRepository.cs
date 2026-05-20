@@ -8,4 +8,5 @@ public interface IBrokenTestCaseRepository {
     Task RemoveAsync(string scriptFileName);
     Task<bool> ContainsAsync(string scriptFileName);
     Task<int> NumberOfBrokenTestsAsync();
+    Task<bool> RetestContainsAsync(string scriptFileName);
 }
