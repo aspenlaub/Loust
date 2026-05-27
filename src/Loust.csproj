@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
+    <RestoreEnablePackagePruning>false</RestoreEnablePackagePruning>
+    <AssetTargetFallback>net10.0</AssetTargetFallback>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>oust.ico</ApplicationIcon>
     <StartupObject>Aspenlaub.Net.GitHub.CSharp.Loust.App</StartupObject>
