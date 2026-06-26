@@ -18,7 +18,6 @@ using Aspenlaub.Net.GitHub.CSharp.Tash;
 using Aspenlaub.Net.GitHub.CSharp.TashClient.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Vishizhukel.Web;
 using Autofac;
-using Microsoft.IdentityModel.Abstractions;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Loust.Gui;
 
