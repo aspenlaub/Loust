@@ -21,14 +21,10 @@ public class CoverageFinderTest {
     private ISecretRepository _SecretRepository;
 
     [TestInitialize]
-    public void Initialize() {
+    public async Task InitializeAsync() {
         _Container = new ContainerBuilder().UseLoust().Build();
         _ScriptFinder = _Container.Resolve<IScriptFinder>();
         _SecretRepository = _Container.Resolve<ISecretRepository>();
-    }
-
-    [TestInitialize]
-    public async Task InitializeAsync() {
         await OustLauncher.LaunchOustIfNecessaryAsync(_Container.Resolve<IFolderResolver>(), _ => { });
     }
 
