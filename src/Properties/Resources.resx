@@ -201,4 +201,7 @@
   <data name="PleaseRunScriptRecoveryManually" xml:space="preserve">
     <value>Please run script recovery if necessary</value>
   </data>
+  <data name="StartingOustFromDefaultLocation" xml:space="preserve">
+    <value>Starting Oust from default location</value>
+  </data>
 </root>

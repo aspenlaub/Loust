@@ -44,11 +44,11 @@ public partial class LoustWindow : IDisposable {
         Abort = false;
         IContainer container = new ContainerBuilder().UseLoust().Build();
         TashAccessor = new TashAccessor(container.Resolve<IDvinRepository>(), container.Resolve<ISimpleLogger>(),
-                                        container.Resolve<ILogConfiguration>(), container.Resolve<IMethodNamesFromStackFramesExtractor>());
+            container.Resolve<ILogConfiguration>(), container.Resolve<IMethodNamesFromStackFramesExtractor>());
         UiSynchronizationContext = SynchronizationContext.Current;
         _ProcessId = Process.GetCurrentProcess().Id;
         UpdateUiThreadLastActiveAt();
-        _LoustWorker = new LoustWorker(this, container, TashAccessor);
+        _LoustWorker = new LoustWorker(this, container, TashAccessor, container.Resolve<IFolderResolver>());
     }
 
     private async void OnWindowClosingAsync(object sender, System.ComponentModel.CancelEventArgs e) {
