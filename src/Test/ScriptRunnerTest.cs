@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Core;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Loust.Gui;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Seoa.Extensions;
@@ -25,6 +26,11 @@ public class ScriptRunnerTest {
         _Container = new ContainerBuilder().UseLoust().Build();
         _ScriptFinder = _Container.Resolve<IScriptFinder>();
         _SecretRepository = _Container.Resolve<ISecretRepository>();
+    }
+
+    [TestInitialize]
+    public async Task InitializeAsync() {
+        await OustLauncher.LaunchOustIfNecessaryAsync(_Container.Resolve<IFolderResolver>(), _ => { });
     }
 
     [TestMethod]

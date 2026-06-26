@@ -10,7 +10,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Core;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Helpers;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Skladasu.Entities;
@@ -23,8 +22,8 @@ namespace Aspenlaub.Net.GitHub.CSharp.Loust.Gui;
 
 internal class LoustWorker(LoustWindow window, IContainer container, ITashAccessor tashAccessor, IFolderResolver folderResolver) {
     public async Task StartOrResumeAsync(bool showUncoveredOnly, bool oldestFirst,
-            bool broken, bool reTest, bool ignoreValidation,
-            bool ignoreUnitTest, bool ignoreBroken) {
+                                         bool broken, bool reTest, bool ignoreValidation,
+                                         bool ignoreUnitTest, bool ignoreBroken) {
         if (window.StatusConfirmedAt.Text == "") {
             MessageBox.Show(Properties.Resources.NotConnectedToTashYet, Properties.Resources.LoustWindowTitle, MessageBoxButton.OK, MessageBoxImage.Hand);
             return;
@@ -52,7 +51,10 @@ internal class LoustWorker(LoustWindow window, IContainer container, ITashAccess
             window.AnalysisResultBox.ScrollToEnd();
         }
 
-        await LaunchOustIfNecessary();
+        await OustLauncher.LaunchOustIfNecessaryAsync(folderResolver, x => {
+              window.AnalysisResult.Blocks.Add(x);
+              window.AnalysisResultBox.ScrollToEnd();
+          });
 
         bool sqlServerIsAvailable = Process.GetProcesses().Any(proc => proc.ProcessName.ToUpper().Contains("SQLSERVR"));
         if (!sqlServerIsAvailable) {
@@ -101,29 +103,9 @@ internal class LoustWorker(LoustWindow window, IContainer container, ITashAccess
         window.AnalysisResultBox.ScrollToEnd();
     }
 
-    private async Task LaunchOustIfNecessary() {
-        if (Process.GetProcessesByName(ControlledApplication.QualifiedName).Length != 0) {
-            return;
-        }
-
-        var errorsAndInfos = new ErrorsAndInfos();
-        IFolder folder = await folderResolver.ResolveAsync(@"$(GitHub)\" + ControlledApplication.Name  + @"Bin\Release", errorsAndInfos);
-        if (!folder.Exists() || errorsAndInfos.AnyErrors()) { return; }
-
-        var p = new Paragraph(new Run(Properties.Resources.StartingOustFromDefaultLocation)) {
-            Foreground = Brushes.Green
-        };
-        window.AnalysisResult.Blocks.Add(p);
-        window.AnalysisResultBox.ScrollToEnd();
-
-        StartProcess(folder.FullName + @"\" + ControlledApplication.QualifiedName + ".exe", "", "");
-        await Wait.UntilAsync(() => Task.FromResult(Process.GetProcessesByName(ControlledApplication.QualifiedName).Length != 0), TimeSpan.FromMinutes(1));
-        await Task.Delay(TimeSpan.FromSeconds(30));
-    }
-
     private async Task ProcessScriptFileNames(bool broken, bool reTest, bool ignoreBroken,
-            IList<string> scriptFileNames, IBrokenTestCaseRepository brokenTestCaseRepository, bool lastScriptFound,
-            string lastScriptName, IScriptRunner runner) {
+                                              IList<string> scriptFileNames, IBrokenTestCaseRepository brokenTestCaseRepository, bool lastScriptFound,
+                                              string lastScriptName, IScriptRunner runner) {
         bool firstScript = true;
         // ReSharper disable once LoopCanBePartlyConvertedToQuery
         foreach (string scriptFileName in scriptFileNames) {
