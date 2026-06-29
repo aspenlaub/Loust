@@ -66,14 +66,9 @@ internal class LoustWorker(LoustWindow window, IContainer container, ITashAccess
         }
 
         if (localHostIsAvailable && sqlServerIsAvailable && !showUncoveredOnly) {
-            IList<string> scriptFileNames = await coverageFinder.GetOrderedScriptFileNamesAsync(oldestFirst, broken, ignoreValidation,
+            IList<string> orderedScriptFileNames = await coverageFinder.GetOrderedScriptFileNamesAsync(oldestFirst, broken, ignoreValidation,
                 ignoreUnitTest);
-            if (oldestFirst) {
-                scriptFileNames = new List<string>();
-                foreach (string s in scriptFileNames.Reverse()) {
-                    scriptFileNames.Add(s);
-                }
-            }
+            var scriptFileNames = (oldestFirst ? orderedScriptFileNames.Reverse() : orderedScriptFileNames).ToList();
             IScriptRunner runner = container.Resolve<IScriptRunner>();
             bool lastScriptFound = !File.Exists(Constants.LastScriptFileName);
             string lastScriptName = lastScriptFound ? "" : await File.ReadAllTextAsync(Constants.LastScriptFileName);
