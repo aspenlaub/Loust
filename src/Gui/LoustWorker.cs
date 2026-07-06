@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
@@ -97,7 +98,12 @@ internal class LoustWorker(LoustWindow window, IContainer container, ITashAccess
         window.AnalysisResultBox.Cursor = oldCursor;
         window.AnalysisResultBox.ScrollToEnd();
 
-        process?.Close();
+        if (process == null) { return; }
+
+        process.Kill();
+        while (Process.GetProcessesByName(ControlledApplication.QualifiedName).Length != 0) {
+            Thread.Sleep(TimeSpan.FromSeconds(5));
+        }
     }
 
     private async Task ProcessScriptFileNames(bool broken, bool reTest, bool ignoreBroken,

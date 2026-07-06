@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Core;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Entities;
@@ -32,7 +33,12 @@ public class CoverageFinderTest {
 
     [TestCleanup]
     public void Cleanup() {
-        _StartedOustProcess?.Close();
+        if (_StartedOustProcess == null) { return; }
+
+        _StartedOustProcess.Kill();
+        while (Process.GetProcessesByName(ControlledApplication.QualifiedName).Length != 0) {
+            Thread.Sleep(TimeSpan.FromSeconds(5));
+        }
     }
 
     [TestMethod]
