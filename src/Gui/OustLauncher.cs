@@ -12,26 +12,27 @@ using Aspenlaub.Net.GitHub.CSharp.Skladasu.Entities;
 namespace Aspenlaub.Net.GitHub.CSharp.Loust.Gui;
 
 public class OustLauncher {
-    public static async Task LaunchOustIfNecessaryAsync(IFolderResolver folderResolver, Action<Paragraph> addParagraph) {
+    public static async Task<Process> LaunchOustIfNecessaryAsync(IFolderResolver folderResolver, Action<Paragraph> addParagraph) {
         if (Process.GetProcessesByName(ControlledApplication.QualifiedName).Length != 0) {
-            return;
+            return null;
         }
 
         var errorsAndInfos = new ErrorsAndInfos();
         IFolder folder = await folderResolver.ResolveAsync(@"$(GitHub)\" + ControlledApplication.Name  + @"Bin\Release", errorsAndInfos);
-        if (!folder.Exists() || errorsAndInfos.AnyErrors()) { return; }
+        if (!folder.Exists() || errorsAndInfos.AnyErrors()) { return null; }
 
         var p = new Paragraph(new Run(Properties.Resources.StartingOustFromDefaultLocation)) {
             Foreground = Brushes.Green
         };
         addParagraph(p);
 
-        StartProcess(folder.FullName + @"\" + ControlledApplication.QualifiedName + ".exe");
+        Process process = StartProcess(folder.FullName + @"\" + ControlledApplication.QualifiedName + ".exe");
         await Wait.UntilAsync(() => Task.FromResult(Process.GetProcessesByName(ControlledApplication.QualifiedName).Length != 0), TimeSpan.FromMinutes(1));
         await Task.Delay(TimeSpan.FromSeconds(30));
+        return process;
     }
 
-    private static void StartProcess(string executableFullName) {
+    private static Process StartProcess(string executableFullName) {
         var process = new Process {
             StartInfo = {
                 WindowStyle = ProcessWindowStyle.Hidden,
@@ -45,5 +46,6 @@ public class OustLauncher {
             }
         };
         process.Start();
+        return process;
     }
 }

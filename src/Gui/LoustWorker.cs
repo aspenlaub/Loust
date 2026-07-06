@@ -51,10 +51,10 @@ internal class LoustWorker(LoustWindow window, IContainer container, ITashAccess
             window.AnalysisResultBox.ScrollToEnd();
         }
 
-        await OustLauncher.LaunchOustIfNecessaryAsync(folderResolver, x => {
+        Process process = await OustLauncher.LaunchOustIfNecessaryAsync(folderResolver, x => {
               window.AnalysisResult.Blocks.Add(x);
               window.AnalysisResultBox.ScrollToEnd();
-          });
+        });
 
         bool sqlServerIsAvailable = Process.GetProcesses().Any(proc => proc.ProcessName.ToUpper().Contains("SQLSERVR"));
         if (!sqlServerIsAvailable) {
@@ -96,6 +96,8 @@ internal class LoustWorker(LoustWindow window, IContainer container, ITashAccess
         window.IsExecuting = false;
         window.AnalysisResultBox.Cursor = oldCursor;
         window.AnalysisResultBox.ScrollToEnd();
+
+        process?.Close();
     }
 
     private async Task ProcessScriptFileNames(bool broken, bool reTest, bool ignoreBroken,

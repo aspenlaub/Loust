@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ public class ScriptRunnerTest {
     private readonly IScriptFinder _ScriptFinder;
     private readonly IContainer _Container;
     private readonly ISecretRepository _SecretRepository;
+    private Process _StartedOustProcess;
 
     public ScriptRunnerTest() {
         _Container = new ContainerBuilder().UseLoust().Build();
@@ -30,7 +32,12 @@ public class ScriptRunnerTest {
 
     [TestInitialize]
     public async Task InitializeAsync() {
-        await OustLauncher.LaunchOustIfNecessaryAsync(_Container.Resolve<IFolderResolver>(), _ => { });
+        _StartedOustProcess = await OustLauncher.LaunchOustIfNecessaryAsync(_Container.Resolve<IFolderResolver>(), _ => { });
+    }
+
+    [TestCleanup]
+    public void Cleanup() {
+        _StartedOustProcess?.Close();
     }
 
     [TestMethod]
@@ -45,7 +52,7 @@ public class ScriptRunnerTest {
         Assert.IsNotNull(fileName);
         IFindIdleProcessResult findIdleProcessResult = await sut.RunScriptAsync(fileName, errorsAndInfos);
         if (findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.DoesNotExist || findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.Dead) {
-            Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")));
+            Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")) ?? "");
         }
         Assert.That.ThereWereNoErrors(errorsAndInfos);
     }
@@ -62,7 +69,7 @@ public class ScriptRunnerTest {
         Assert.IsNotNull(fileName);
         IFindIdleProcessResult findIdleProcessResult = await sut.RunScriptAsync(fileName, errorsAndInfos);
         if (findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.DoesNotExist || findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.Dead) {
-            Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")));
+            Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")) ?? "");
         }
         Assert.That.ThereWereNoErrors(errorsAndInfos);
     }
@@ -88,7 +95,7 @@ public class ScriptRunnerTest {
     private static async Task TryRunningYetAnotherScript(IScriptRunner sut, string fileName, IErrorsAndInfos errorsAndInfos) {
         IFindIdleProcessResult findIdleProcessResult = await sut.RunScriptAsync(fileName, errorsAndInfos);
         if (findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.DoesNotExist || findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.Dead) {
-            Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")));
+            Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")) ?? "");
         }
     }
 
@@ -99,13 +106,13 @@ public class ScriptRunnerTest {
         var errorsAndInfos = new ErrorsAndInfos();
         string folder = await _ScriptFinder.ScriptFolderAsync(errorsAndInfos);
         Assert.That.ThereWereNoErrors(errorsAndInfos);
-        var fileNames = Directory.GetFiles(folder, "*unit*test*.xml").OrderBy(s => s).ToList();
-        fileNames = fileNames.Where(f => coverageFinder.NumberOfResults(shortener.CoverageFileForScriptFileShortName(f)) == 0).ToList();
+        var fileNames = Directory.GetFiles(folder, "*unit*test*.xml").OrderBy(s => s)
+            .Where(f => coverageFinder.NumberOfResults(shortener.CoverageFileForScriptFileShortName(f)) == 0).ToList();
         for (int i = 0; i < fileNames.Count && coverageFinder.NumberOfResults("*unit*test*.txt") < 25; i++) {
             IScriptRunner scriptRunner = _Container.Resolve<IScriptRunner>();
             IFindIdleProcessResult findIdleProcessResult = await scriptRunner.RunScriptAsync(fileNames[i], errorsAndInfos);
             if (findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.DoesNotExist || findIdleProcessResult.BestProcessStatus == ControllableProcessStatus.Dead) {
-                Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")));
+                Assert.Inconclusive(errorsAndInfos.Errors.FirstOrDefault(e => e.Contains("No " + ControlledApplication.Name + " process")) ?? "");
             }
             Assert.That.ThereWereNoErrors(errorsAndInfos);
         }

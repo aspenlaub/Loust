@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Loust.Core;
@@ -19,13 +20,19 @@ public class CoverageFinderTest {
     private IContainer _Container;
     private IScriptFinder _ScriptFinder;
     private ISecretRepository _SecretRepository;
+    private Process _StartedOustProcess;
 
     [TestInitialize]
     public async Task InitializeAsync() {
         _Container = new ContainerBuilder().UseLoust().Build();
         _ScriptFinder = _Container.Resolve<IScriptFinder>();
         _SecretRepository = _Container.Resolve<ISecretRepository>();
-        await OustLauncher.LaunchOustIfNecessaryAsync(_Container.Resolve<IFolderResolver>(), _ => { });
+        _StartedOustProcess = await OustLauncher.LaunchOustIfNecessaryAsync(_Container.Resolve<IFolderResolver>(), _ => { });
+    }
+
+    [TestCleanup]
+    public void Cleanup() {
+        _StartedOustProcess?.Close();
     }
 
     [TestMethod]
