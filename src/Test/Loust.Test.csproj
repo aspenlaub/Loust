@@ -21,6 +21,6 @@
     <ProjectReference Include="..\Loust.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Seoa" Version="2.0.2666.1373" />
+    <PackageReference Include="Seoa" Version="2.0.2667.1288" />
   </ItemGroup>
 </Project>
